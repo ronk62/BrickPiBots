@@ -25,6 +25,7 @@
 '''
 # 8/28/2020     Ron King    - implemented a 7 point rolling avg (n-3, n-2, n-1, n, n+1, n+2, n+3) on polarCoordsir1hmean
 #                           array (polarCoordsir2hmean...you're next!)
+# (test git commit)
 
 #                           - DON'T Forget to start xming and export DISPLAY=10.0.0.9:0.0  (change IP addr as req'd)
 
