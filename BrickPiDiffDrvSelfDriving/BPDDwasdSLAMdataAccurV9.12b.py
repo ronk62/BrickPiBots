@@ -23,9 +23,9 @@
                             if abs(stdev*(target - new_measured) < abs(stdev*(target - prev_measured):
                                 new_best = new_measured
 '''
-# 8/28/2020     Ron King    - implemented a 7 point rolling avg (n-3, n-2, n-1, n, n+1, n+2, n+3) on polarCoordsir1hmean
+# 8/28/2020     Ron King    - implemented a 41 point rolling avg (n-3, n-2, n-1, n, n+1, n+2, n+3) on polarCoordsir1hmean
 #                           array (polarCoordsir2hmean...you're next!)
-# (test git commit)
+#                           - added n-point rolling avg for polarCoordsir1rmean (and polarCoordsir2rmean)
 
 #                           - DON'T Forget to start xming and export DISPLAY=10.0.0.9:0.0  (change IP addr as req'd)
 
@@ -361,17 +361,17 @@ if __name__ == "__main__":
             else:
                 print ("saving sample data to csv files")
                 # save to csv files
-                np.savetxt('polarCoordsUSmean-V912b-8.csv', polarCoordsUSmean, delimiter=',')
-                np.savetxt('polarCoordsUSstd-V912b-8.csv', polarCoordsUSstd, delimiter=',')
-                np.savetxt('polarCoordsir1rmean-V912b-8.csv', polarCoordsir1rmean, delimiter=',')
-                np.savetxt('polarCoordsir1rstd-V912b-8.csv', polarCoordsir1rstd, delimiter=',')
-                np.savetxt('polarCoordsir1hmean-V912b-8.csv', polarCoordsir1hmean, delimiter=',')
-                np.savetxt('polarCoordsir1hstd-V912b-8.csv', polarCoordsir1hstd, delimiter=',')
-                np.savetxt('polarCoordsir2rmean-V912b-8.csv', polarCoordsir2rmean, delimiter=',')
-                np.savetxt('polarCoordsir2rstd-V912b-8.csv', polarCoordsir2rstd, delimiter=',')
-                np.savetxt('polarCoordsir2hmean-V912b-8.csv', polarCoordsir2hmean, delimiter=',')
-                np.savetxt('polarCoordsir2hstd-V912b-8.csv', polarCoordsir2hstd, delimiter=',')
-                np.savetxt('polarCoordscmpMean-V912b-8.csv', polarCoordscmpMean, delimiter=',')
+                np.savetxt('polarCoordsUSmean-V912b-9.csv', polarCoordsUSmean, delimiter=',')
+                np.savetxt('polarCoordsUSstd-V912b-9.csv', polarCoordsUSstd, delimiter=',')
+                np.savetxt('polarCoordsir1rmean-V912b-9.csv', polarCoordsir1rmean, delimiter=',')
+                np.savetxt('polarCoordsir1rstd-V912b-9.csv', polarCoordsir1rstd, delimiter=',')
+                np.savetxt('polarCoordsir1hmean-V912b-9.csv', polarCoordsir1hmean, delimiter=',')
+                np.savetxt('polarCoordsir1hstd-V912b-9.csv', polarCoordsir1hstd, delimiter=',')
+                np.savetxt('polarCoordsir2rmean-V912b-9.csv', polarCoordsir2rmean, delimiter=',')
+                np.savetxt('polarCoordsir2rstd-V912b-9.csv', polarCoordsir2rstd, delimiter=',')
+                np.savetxt('polarCoordsir2hmean-V912b-9.csv', polarCoordsir2hmean, delimiter=',')
+                np.savetxt('polarCoordsir2hstd-V912b-9.csv', polarCoordsir2hstd, delimiter=',')
+                np.savetxt('polarCoordscmpMean-V912b-9.csv', polarCoordscmpMean, delimiter=',')
                 print ("saves commplete")
                 print("")
 
@@ -379,17 +379,17 @@ if __name__ == "__main__":
             print("")
             print ("loading sample data from csv files")
             # load from csv files
-            polarCoordsUSmean = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsUSmean-V912b-5.csv', delimiter=',')
-            polarCoordsUSstd = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsUSstd-V912b-5.csv', delimiter=',')
-            polarCoordsir1rmean = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsir1rmean-V912b-5.csv', delimiter=',')
-            polarCoordsir1rstd = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsir1rstd-V912b-5.csv', delimiter=',')
-            polarCoordsir1hmean = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsir1hmean-V912b-5.csv', delimiter=',')
-            polarCoordsir1hstd = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsir1hstd-V912b-5.csv', delimiter=',')            
-            polarCoordsir2rmean = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsir2rmean-V912b-5.csv', delimiter=',')
-            polarCoordsir2rstd = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsir2rstd-V912b-5.csv', delimiter=',')
-            polarCoordsir2hmean = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsir2hmean-V912b-5.csv', delimiter=',')
-            polarCoordsir2hstd = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsir2hstd-V912b-5.csv', delimiter=',')            
-            polarCoordscmpMean = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordscmpMean-V912b-5.csv', delimiter=',')
+            polarCoordsUSmean = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsUSmean-V912b-9.csv', delimiter=',')
+            polarCoordsUSstd = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsUSstd-V912b-9.csv', delimiter=',')
+            polarCoordsir1rmean = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsir1rmean-V912b-9.csv', delimiter=',')
+            polarCoordsir1rstd = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsir1rstd-V912b-9.csv', delimiter=',')
+            polarCoordsir1hmean = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsir1hmean-V912b-9.csv', delimiter=',')
+            polarCoordsir1hstd = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsir1hstd-V912b-9.csv', delimiter=',')            
+            polarCoordsir2rmean = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsir2rmean-V912b-9.csv', delimiter=',')
+            polarCoordsir2rstd = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsir2rstd-V912b-9.csv', delimiter=',')
+            polarCoordsir2hmean = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsir2hmean-V912b-9.csv', delimiter=',')
+            polarCoordsir2hstd = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsir2hstd-V912b-9.csv', delimiter=',')            
+            polarCoordscmpMean = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordscmpMean-V912b-9.csv', delimiter=',')
             print ("loads commplete")
             print("")
             # rescaling raw *std, polarCoordsir1hmean, and polarCoordsir2hmean values (multiply by 10) for better graphing
@@ -412,7 +412,40 @@ if __name__ == "__main__":
                 #print("i = ", i)
             #print("ODt = ", ODt)
             print("")
+
+
+            print("smoothing the ir distance 'r' mean array data...")
+            print("")
+            # 41 point rolling avg (n-3, n-2, n-1, n, n+1, n+2, n+3)
+            # IR1
+            lpfir1rmean = np.array([], dtype=np.float32) # initialize var used to store smoothed results
+            for i in range(0,len(polarCoordsir1rmean)):
+                taken = np.take(polarCoordsir1rmean,[i-20, i-19, i-18, i-17, i-16, i-15, i-14, i-13, i-12, i-11, i-10, i-9, i-8, i-7, i-6, i-5, i-4, i-3, i-2, i-1, i, i+1, i+2, i+3, i+4, i+5, i+6, i+7, i+8, i+9, i+10, i+11, i+12, i+13, i+14, i+15, i+16, i+17, i+18, i+19, i+20], mode='wrap')
+                #print("taken = ", taken)
+                k = 0
+                for j in range(0,len(taken)):
+                    k = k + taken[j]
+                k = k / 41              ###  notice this one is set to "41"
+                # print("k = ", k)
+                # print("i = ", i)
+                lpfir1rmean = np.append(lpfir1rmean, k)
+            print("")
+
+            # IR2
+            lpfir2rmean = np.array([], dtype=np.float32) # initialize var used to store smoothed results
+            for i in range(0,len(polarCoordsir2rmean)):
+                taken = np.take(polarCoordsir2rmean,[i-20, i-19, i-18, i-17, i-16, i-15, i-14, i-13, i-12, i-11, i-10, i-9, i-8, i-7, i-6, i-5, i-4, i-3, i-2, i-1, i, i+1, i+2, i+3, i+4, i+5, i+6, i+7, i+8, i+9, i+10, i+11, i+12, i+13, i+14, i+15, i+16, i+17, i+18, i+19, i+20], mode='wrap')
+                #print("taken = ", taken)
+                k = 0
+                for j in range(0,len(taken)):
+                    k = k + taken[j]
+                k = k / 41              ###  notice this one is set to "41"
+                # print("k = ", k)
+                # print("i = ", i)
+                lpfir2rmean = np.append(lpfir2rmean, k)
+            print("")
             
+
             print("smoothing the ir heading mean array data...")
             print("")
             # 41 point rolling avg (n-3, n-2, n-1, n, n+1, n+2, n+3)
@@ -462,7 +495,7 @@ if __name__ == "__main__":
 
             for i in range(0,len(polarCoordsUSmean)):
                 ## IR1
-                if polarCoordsir1rmean[i] <= 255 and polarCoordsir1hstd[i] <= 3 and abs(polarCoordsir1hstd[i]) > 0.3:    # needs tuning
+                if lpfir1rmean[i] <= 300 and polarCoordsir1hstd[i] <= 3 and abs(polarCoordsir1hstd[i]) > 0.3:    # needs tuning
                     # find value closest to +5
                     if lpfir1hmean[i] > 3 and lpfir1hmean[i] < 9:    # needs tuning
                         new_plus5ir1hangle = polarCoordscmpMean[i]
@@ -489,7 +522,7 @@ if __name__ == "__main__":
                             
 
                 ## IR2
-                if polarCoordsir2rmean[i] <= 255 and polarCoordsir2hstd[i] <= 3 and abs(polarCoordsir2hstd[i]) > 0.3:    # needs tuning
+                if lpfir2rmean[i] <= 300 and polarCoordsir2hstd[i] <= 3 and abs(polarCoordsir2hstd[i]) > 0.3:    # needs tuning
                     # find value closest to +5
                     if lpfir2hmean[i] > 3 and lpfir2hmean[i] < 9:    # needs tuning
                         new_plus5ir2hangle = polarCoordscmpMean[i]
@@ -514,6 +547,8 @@ if __name__ == "__main__":
                             # print("lpfir2hmean[i] = ", lpfir2hmean[i])
                             # print("polarCoordsir2hstd[i] = ", polarCoordsir2hstd[i])
                             
+            print("")
+            print("")
             print("plus5ir1hangle = ", plus5ir1hangle)
             print("zeroir1hangle = ", zeroir1hangle)
             print("minus5ir1hangle = ", minus5ir1hangle)
@@ -548,28 +583,47 @@ if __name__ == "__main__":
             polarCoordsir2hstd = np.array([], dtype=np.int32)
             print("r pushed - reinitialized polarCoords* arrays")
 
-        if x == 103: # g pushed - graph the (mostly) raw data
+
+        if x == 103: # g pushed - graph the data
+            plt.figure(1)
             plt.plot(ODt,polarCoordsUSmean, label='polarCoordsUSmean')
             # plt.plot(ODt,polarCoordsUSstdX10, label='polarCoordsUSstdX10')
+
             plt.plot(ODt,polarCoordscmpMean, label='polarCoordscmpMean')
+            
             plt.plot(ODt,polarCoordsir1rmean, label='polarCoordsir1rmean')
-            # plt.plot(ODt,polarCoordsir1hmeanX10, label='polarCoordsir1hmeanX10')
-            # plt.plot(ODt,polarCoordsir1rstdX10, label='polarCoordsir1rstdX10')
-            # plt.plot(ODt,polarCoordsir1hstdX10, label='polarCoordsir1hstdX10')
-            plt.plot(ODt,polarCoordsir1hmean, label='polarCoordsir1hmean')
+            plt.plot(ODt,lpfir1rmean, label='lpfir1rmean')
+            plt.plot(ODt,polarCoordsir1hmeanX10, label='polarCoordsir1hmeanX10')
+            plt.plot(ODt,polarCoordsir1rstdX10, label='polarCoordsir1rstdX10')
+            plt.plot(ODt,polarCoordsir1hstdX10, label='polarCoordsir1hstdX10')
+            # plt.plot(ODt,polarCoordsir1hmean, label='polarCoordsir1hmean')
             plt.plot(ODt,lpfir1hmean, label='lpfir1hmean')
+
+            plt.xlabel('ODt')
+            plt.ylabel('sensor values')
+            plt.title('sensor data V9x2b')      ### csv input files are V902 1-4 and V912 5-7
+            plt.legend()
+            # plt.show()
+
+            plt.figure(2)
+            plt.plot(ODt,polarCoordsUSmean, label='polarCoordsUSmean')
+            # plt.plot(ODt,polarCoordsUSstdX10, label='polarCoordsUSstdX10')
+
+            plt.plot(ODt,polarCoordscmpMean, label='polarCoordscmpMean')
+
             plt.plot(ODt,polarCoordsir2rmean, label='polarCoordsir2rmean')
-            # plt.plot(ODt,polarCoordsir2hmeanX10, label='polarCoordsir2hmeanX10')                        
-            # plt.plot(ODt,polarCoordsir2rstdX10, label='polarCoordsir2rstdX10')
-            # plt.plot(ODt,polarCoordsir2hstdX10, label='polarCoordsir2hstdX10')
-            plt.plot(ODt,polarCoordsir2hmean, label='polarCoordsir2hmean')
+            plt.plot(ODt,lpfir2rmean, label='lpfir2rmean')
+            plt.plot(ODt,polarCoordsir2hmeanX10, label='polarCoordsir2hmeanX10')                        
+            plt.plot(ODt,polarCoordsir2rstdX10, label='polarCoordsir2rstdX10')
+            plt.plot(ODt,polarCoordsir2hstdX10, label='polarCoordsir2hstdX10')
+            # plt.plot(ODt,polarCoordsir2hmean, label='polarCoordsir2hmean')
             plt.plot(ODt,lpfir2hmean, label='lpfir2hmean')
 
             plt.xlabel('ODt')
             plt.ylabel('sensor values')
-            #plt.ylabel('processed data')
-            plt.title('sensor data V902b')
+            plt.title('sensor data V9x2b')      ### csv input files are V902 1-4 and V912 5-7
             plt.legend()
+
             plt.show()
 
 
