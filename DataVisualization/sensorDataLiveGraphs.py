@@ -170,6 +170,101 @@ mR.position = 0
 spd = 0        # set this value to -30 to +90; use to set outer wheel/motor speed; default to mL for driving straight
 turnRatio = 0.0  # set this value to -0.5 to +0.5; subtract from 1 to set turn ratio; multiply * spd to set inside motor speed
 
+# setup for live graphing
+style.use('fivethirtyeight')
+fig = plt.figure()
+ax1 = fig.add_subplot(1,1,1)
+
+def animate(i):
+    # Declare ODt and others as global to force use of global in this function
+    global ODt 
+    global USmean, USstd
+    global cmpMean
+    global ir1rmean, ir1rstd, ir1hmean, ir1hstd
+    global ir2rmean, ir2rstd, ir2hmean, ir2hstd
+
+    # init the data collection arrays for each collection series
+    USr = np.array([], dtype=np.int32)
+    cmpDeg = np.array([], dtype=np.int32)
+    ir1r = np.array([], dtype=np.int32)
+    ir1h = np.array([], dtype=np.int32)
+    ir2r = np.array([], dtype=np.int32)
+    ir2h = np.array([], dtype=np.int32)
+    # take 100 samples
+    for j in range(100):
+        usDistCmVal = us.distance_centimeters
+        ir1DistVal = ir.distance(channel=1)
+        ir2DistVal = ir.distance(channel=2)
+        if ir1DistVal == None:
+            ir1DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
+        else:
+            ir1DistVal = int(3.19 * ir1DistVal)
+        ir1HeadVal = ir.heading(channel=1)
+        if ir2DistVal == None:
+            ir2DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
+        else:
+            ir2DistVal = int(3.19 * ir2DistVal)
+        ir2HeadVal = ir.heading(channel=2)
+        compassVal = cmp.value(0)
+        USr = np.append(USr, usDistCmVal)
+        cmpDeg = np.append(cmpDeg, compassVal)
+        ir1r = np.append(ir1r, ir1DistVal)
+        ir1h = np.append(ir1h, ir1HeadVal)
+        ir2r = np.append(ir2r, ir2DistVal)
+        ir2h = np.append(ir2h, ir2HeadVal)
+        
+    print("")
+    print ("USr.size = ", USr.size)
+    print("min      max      mean      std")
+    print(np.min(USr), np.max(USr), np.mean(USr), np.std(USr))
+    print("")
+    print ("cmpDeg.size = ", cmpDeg.size)
+    print("min      max      mean      std")
+    print(np.min(cmpDeg), np.max(cmpDeg), np.mean(cmpDeg), np.std(cmpDeg))
+    print("")
+    print ("ir1r.size = ", ir1r.size)
+    print("min      max      mean      std")
+    print(np.min(ir1r), np.max(ir1r), np.mean(ir1r), np.std(ir1r))
+    print("")
+    print ("ir1h.size = ", ir1h.size)
+    print("min      max      mean      std")
+    print(np.min(ir1h), np.max(ir1h), np.mean(ir1h), np.std(ir1h))
+    print("")
+    print ("ir2r.size = ", ir2r.size)
+    print("min      max      mean      std")
+    print(np.min(ir2r), np.max(ir2r), np.mean(ir2r), np.std(ir2r))
+    print("")
+    print ("ir2h.size = ", ir2h.size)
+    print("min      max      mean      std")
+    print(np.min(ir2h), np.max(ir2h), np.mean(ir2h), np.std(ir2h))
+    print("")
+
+    i = i + 1
+    ODt = np.append(ODt, i)
+    USmean = np.append(USmean, np.mean(USr))
+    USstd = np.append(USstd, np.std(USr))
+    cmpMean = np.append(cmpMean, np.mean(cmpDeg))
+    ir1rmean = np.append(ir1rmean, np.mean(ir1r))
+    ir1rstd = np.append(ir1rstd, np.std(ir1r))
+    ir1hmean = np.append(ir1hmean, np.mean(ir1h))
+    ir1hstd = np.append(ir1hstd, np.std(ir1h))
+    ir2rmean = np.append(ir2rmean, np.mean(ir2r))
+    ir2rstd = np.append(ir2rstd, np.std(ir2r))
+    ir2hmean = np.append(ir2hmean, np.mean(ir2h))
+    ir2hstd = np.append(ir2hstd, np.std(ir2h))
+
+    ax1.clear()
+    ax1.plot(ODt, USmean)
+
+    if USmean.size > 100000:
+        sample_mode = -1
+        print("")
+        print("")
+        print ("Exiting sample mode due to sample size too large...")
+        print ("USmean.size = ", USmean.size)
+        print("")
+
+
 
 def keyboardInput(name):
     while (True):
@@ -182,17 +277,6 @@ if __name__ == "__main__":
     myThread = threading.Thread(target=keyboardInput, args=(1,), daemon=True)
     myThread.start()
     print ("Ready for keyboard commands...")
-
-
-# setup for live graphing
-style.use('fivethirtyeight')
-
-fig = plt.figure()
-ax1 = fig.add_subplot(1,1,1)
-
-def animate(i):
-    ax1.clear()
-    ax1.plot(ODt, USmean)
 
 
 
@@ -378,93 +462,8 @@ def animate(i):
         
         if sample_mode > 0:
             try:
-                # rototate to cmp angle and take data samples
-                #for i in range(3):  ### testing
-                for i in range(360):
-                    # init the data collection arrays for each collection series
-                    USr = np.array([], dtype=np.int32)
-                    cmpDeg = np.array([], dtype=np.int32)
-                    ir1r = np.array([], dtype=np.int32)
-                    ir1h = np.array([], dtype=np.int32)
-                    ir2r = np.array([], dtype=np.int32)
-                    ir2h = np.array([], dtype=np.int32)
-                    # take 100 samples
-                    for j in range(100):
-                        usDistCmVal = us.distance_centimeters
-                        ir1DistVal = ir.distance(channel=1)
-                        ir2DistVal = ir.distance(channel=2)
-                        if ir1DistVal == None:
-                            ir1DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
-                        else:
-                            ir1DistVal = int(3.19 * ir1DistVal)
-                        ir1HeadVal = ir.heading(channel=1)
-                        if ir2DistVal == None:
-                            ir2DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
-                        else:
-                            ir2DistVal = int(3.19 * ir2DistVal)
-                        ir2HeadVal = ir.heading(channel=2)
-                        compassVal = cmp.value(0)
-                        USr = np.append(USr, usDistCmVal)
-                        cmpDeg = np.append(cmpDeg, compassVal)
-                        ir1r = np.append(ir1r, ir1DistVal)
-                        ir1h = np.append(ir1h, ir1HeadVal)
-                        ir2r = np.append(ir2r, ir2DistVal)
-                        ir2h = np.append(ir2h, ir2HeadVal)
-                        
-                    print("")
-                    print ("USr.size = ", USr.size)
-                    print("min      max      mean      std")
-                    print(np.min(USr), np.max(USr), np.mean(USr), np.std(USr))
-                    print("")
-                    print ("cmpDeg.size = ", cmpDeg.size)
-                    print("min      max      mean      std")
-                    print(np.min(cmpDeg), np.max(cmpDeg), np.mean(cmpDeg), np.std(cmpDeg))
-                    print("")
-                    print ("ir1r.size = ", ir1r.size)
-                    print("min      max      mean      std")
-                    print(np.min(ir1r), np.max(ir1r), np.mean(ir1r), np.std(ir1r))
-                    print("")
-                    print ("ir1h.size = ", ir1h.size)
-                    print("min      max      mean      std")
-                    print(np.min(ir1h), np.max(ir1h), np.mean(ir1h), np.std(ir1h))
-                    print("")
-                    print ("ir2r.size = ", ir2r.size)
-                    print("min      max      mean      std")
-                    print(np.min(ir2r), np.max(ir2r), np.mean(ir2r), np.std(ir2r))
-                    print("")
-                    print ("ir2h.size = ", ir2h.size)
-                    print("min      max      mean      std")
-                    print(np.min(ir2h), np.max(ir2h), np.mean(ir2h), np.std(ir2h))
-                    print("")
-                    
-                    ODt = np.append(ODt, i)
-                    USmean = np.append(USmean, np.mean(USr))
-                    USstd = np.append(USstd, np.std(USr))
-                    cmpMean = np.append(cmpMean, np.mean(cmpDeg))
-                    ir1rmean = np.append(ir1rmean, np.mean(ir1r))
-                    ir1rstd = np.append(ir1rstd, np.std(ir1r))
-                    ir1hmean = np.append(ir1hmean, np.mean(ir1h))
-                    ir1hstd = np.append(ir1hstd, np.std(ir1h))
-                    ir2rmean = np.append(ir2rmean, np.mean(ir2r))
-                    ir2rstd = np.append(ir2rstd, np.std(ir2r))
-                    ir2hmean = np.append(ir2hmean, np.mean(ir2h))
-                    ir2hstd = np.append(ir2hstd, np.std(ir2h))
-
-                    if x == 120: # x key means exit
-                        break
-
-                    if USmean.size > 100000:
-                        sample_mode = -1
-                        print("")
-                        print("")
-                        print ("Exiting sample mode due to sample size too large...")
-                        print ("USmean.size = ", USmean.size)
-                        print("")
-                    
-                    ani = animation.FuncAnimation(fig, animate, interval=1000)
-                    plt.show()
-
-                    time.sleep(1)
+                ani = animation.FuncAnimation(fig, animate, interval=1000)
+                plt.show()        
                 
             except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
                 mL.on(0, brake=False)
