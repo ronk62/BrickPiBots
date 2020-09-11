@@ -135,13 +135,38 @@ a = 137                             # (Beacon2-Beacon1) B-C = a ...V902b-5,6,7
 # zeroir1hangle =  100.0
 # zeroir2hangle =  55.0
 
-# Location 7
-zeroir1hangle =  71.0
-zeroir2hangle =  13.0
+# # Location 7
+# zeroir1hangle =  71.0
+# zeroir2hangle =  13.0
+
+# # Location 8
+# # zeroir1hangle =  33.0 # original detected angle (using -5, 0, 5 method, as of 9/10/2020) low batteries - beacon1
+# zeroir1hangle =  81.0 # corrected angle, using visual analysis of graphed IR data
+# # beacon2 has near perfect angle and distance measurements and should be basis of r-theta positioning
+# # a calculation and method to vote for preferred localization needs to be developed
+# zeroir2hangle =  42.0
+
+# # Location 9
+# zeroir1hangle =  26.0      <---- more bogus data; this angle s/b close to 80
+# zeroir2hangle =  40.0
+
+## Locations 10, 11, 12 are all throw-away (most or all angles = '400')
+
+# # Location 13
+# zeroir1hangle =  90.0
+# zeroir2hangle =  38.0
+
+# # Location 14
+# zeroir1hangle =  87.0
+# zeroir2hangle =  42.0
+
+# Location 15
+zeroir1hangle =  85.0
+zeroir2hangle =  44.0
 
 # # Location made up (feasible, dummmy data)
-# zeroir1hangle =  327.0
-# zeroir2hangle =  326.0
+# zeroir1hangle =  100.0
+# zeroir2hangle =  55.0
 
 # relative angles - calculate the offset (360 - cmpDegB1B2) and add to to each val
 offsetDeg = 360 - cmpDegB1B2
@@ -280,9 +305,9 @@ for i in range(neCornery + 1):
 print("")
 print ("loading sample data from csv files")
 # load from csv files
-polarCoordsUSmean = np.loadtxt('/home/ronk/Documents/pythonProjects/BrickPi/ev3dev2Projects/polarCoordsUSmean-V912b-7.csv', delimiter=',')
-polarCoordsUSstd = np.loadtxt('/home/ronk/Documents/pythonProjects/BrickPi/ev3dev2Projects/polarCoordsUSstd-V912b-7.csv', delimiter=',')
-polarCoordscmpMean = np.loadtxt('/home/ronk/Documents/pythonProjects/BrickPi/ev3dev2Projects/polarCoordscmpMean-V912b-7.csv', delimiter=',')
+polarCoordsUSmean = np.loadtxt('/home/robot/ev3dev2Projects//polarCoordsUSmean-V912b-15.csv', delimiter=',')
+polarCoordsUSstd = np.loadtxt('/home/robot/ev3dev2Projects//polarCoordsUSstd-V912b-15.csv', delimiter=',')
+polarCoordscmpMean = np.loadtxt('/home/robot/ev3dev2Projects//polarCoordscmpMean-V912b-15.csv', delimiter=',')
 print ("loads commplete")
 print("")
 
