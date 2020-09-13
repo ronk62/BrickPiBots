@@ -163,27 +163,28 @@ turnRatio = 0.0  # set this value to -0.5 to +0.5; subtract from 1 to set turn r
 # setup for live graphing
 style.use('fivethirtyeight')
 fig = plt.figure()
-ax1 = fig.add_subplot(1,1,1)
+ax1 = fig.add_subplot(2,1,1)
+ax2 = fig.add_subplot(2,1,2)
 
 
 def animate(i):
     # Declare ODt and others as global to force use of global in this function
     global ODt 
-    global USr
+    # global USr
     # global cmpDeg
-    # global ir1r, ir1h
+    global ir1r, ir1h
     # global ir2r, ir2h
     # global printVerbose
 
     # read the sensors
-    usDistCmVal = us.distance_centimeters
-    # ir1DistVal = ir.distance(channel=1)
+    # usDistCmVal = us.distance_centimeters
+    ir1DistVal = ir.distance(channel=1)
     # ir2DistVal = ir.distance(channel=2)
-    # if ir1DistVal == None:
-    #     ir1DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
-    # else:
-    #     ir1DistVal = int(3.19 * ir1DistVal)
-    # ir1HeadVal = ir.heading(channel=1)
+    if ir1DistVal == None:
+        ir1DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
+    else:
+        ir1DistVal = int(3.19 * ir1DistVal)
+    ir1HeadVal = ir.heading(channel=1)
     # if ir2DistVal == None:
     #     ir2DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
     # else:
@@ -195,12 +196,12 @@ def animate(i):
 
     if printVerbose > 0:
         print("")
-        print ("usDistCmVal = ", usDistCmVal)
+        # print ("usDistCmVal = ", usDistCmVal)
         # print("")
-        # print ("ir1DistVal = ", ir1DistVal)
+        print ("ir1DistVal = ", ir1DistVal)
         # print("")
-        # print ("ir1HeadVal = ", ir1HeadVal)
-        # print("")
+        print ("ir1HeadVal = ", ir1HeadVal)
+        print("")
         # print ("ir2DistVal = ", ir2DistVal)
         # print("")
         # print ("ir2HeadVal = ", ir2HeadVal)
@@ -212,22 +213,25 @@ def animate(i):
 
     #append the arrays
     ODt = np.append(ODt, i)
-    USr = np.append(USr, usDistCmVal)
+    # USr = np.append(USr, usDistCmVal)
     # cmpDeg = np.append(cmpDeg, compassVal)
-    # ir1r = np.append(ir1r, ir1DistVal)
-    # ir1h = np.append(ir1h, ir1HeadVal)
+    ir1r = np.append(ir1r, ir1DistVal)
+    ir1h = np.append(ir1h, ir1HeadVal)
     # ir2r = np.append(ir2r, ir2DistVal)
     # ir2h = np.append(ir2h, ir2HeadVal)
 
     ax1.clear()
-    ax1.plot(ODt, USr)
+    ax1.plot(ODt, ir1r)
 
-    if USr.size > 100000:
+    ax2.clear()
+    ax2.plot(ODt, ir1h)
+
+    if ODt.size > 100000:
         sample_mode = -1
         print("")
         print("")
         print ("Exiting sample mode due to sample size too large...")
-        print ("USr.size = ", USr.size)
+        print ("ODt.size = ", ODt.size)
         print("")
 
 
