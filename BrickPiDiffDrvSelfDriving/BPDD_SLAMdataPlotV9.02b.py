@@ -160,9 +160,18 @@ a = 137                             # (Beacon2-Beacon1) B-C = a ...V902b-5,6,7
 # zeroir1hangle =  87.0
 # zeroir2hangle =  42.0
 
-# Location 15
-zeroir1hangle =  85.0
-zeroir2hangle =  44.0
+# # Location 15
+# zeroir1hangle =  85.0
+# zeroir2hangle =  44.0
+
+
+# # Location 22
+# zeroir1hangle =  71.0
+# zeroir2hangle =  16.0
+
+# Location 24
+zeroir1hangle =  46.0
+zeroir2hangle =  0.0
 
 # # Location made up (feasible, dummmy data)
 # zeroir1hangle =  100.0
@@ -305,9 +314,9 @@ for i in range(neCornery + 1):
 print("")
 print ("loading sample data from csv files")
 # load from csv files
-polarCoordsUSmean = np.loadtxt('/home/robot/ev3dev2Projects//polarCoordsUSmean-V912b-15.csv', delimiter=',')
-polarCoordsUSstd = np.loadtxt('/home/robot/ev3dev2Projects//polarCoordsUSstd-V912b-15.csv', delimiter=',')
-polarCoordscmpMean = np.loadtxt('/home/robot/ev3dev2Projects//polarCoordscmpMean-V912b-15.csv', delimiter=',')
+polarCoordsUSmean = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsUSmean-V912b-23.csv', delimiter=',')
+polarCoordsUSstd = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordsUSstd-V912b-23.csv', delimiter=',')
+polarCoordscmpMean = np.loadtxt('/home/robot/ev3dev2Projects/polarCoordscmpMean-V912b-23.csv', delimiter=',')
 print ("loads commplete")
 print("")
 
