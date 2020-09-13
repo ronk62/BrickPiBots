@@ -169,13 +169,13 @@ a = 137                             # (Beacon2-Beacon1) B-C = a ...V902b-5,6,7
 # zeroir1hangle =  71.0
 # zeroir2hangle =  16.0
 
-# Location 24
-zeroir1hangle =  46.0
-zeroir2hangle =  0.0
+# # Location 23
+# zeroir1hangle =  46.0
+# zeroir2hangle =  0.0
 
-# # Location made up (feasible, dummmy data)
-# zeroir1hangle =  100.0
-# zeroir2hangle =  55.0
+# Location made up (feasible, dummmy data)
+zeroir1hangle =  44.0
+zeroir2hangle =  358.0
 
 # relative angles - calculate the offset (360 - cmpDegB1B2) and add to to each val
 offsetDeg = 360 - cmpDegB1B2
