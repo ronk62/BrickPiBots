@@ -531,17 +531,12 @@ if __name__ == "__main__":
                         # note that an ir distance of -1 means we don't even see the beacon
                         # note also that an ir distance > 300 is not trustworthy, so let's limit that
                         if (b1IRdistMean > 300 or b1IRdistMean == -1) and b1IRhMean == 0:
-                            # move fast either cw or ccw based on compass heading
-                            if compassVal >= 125:
-                                # rotate cw
-                                mL.on(10, brake=False)
-                            if compassVal < 125 or compassVal > 352:
-                                # rotate ccw
-                                mL.on(-10, brake=False)
+                            # move fast in cw direction until we pick up a beacon signal (or exceed search limit)
+                            mL.on(10, brake=False)
                         
                         # stop when heading is between -1 and 1 AND ir distance is not -1
                         # you should now have a good lock on beacon1, so grab the data
-                        if b1IRdistMean > 0 and b1IRhMean >= -1 and b1IRhMean <= 1:
+                        if b1IRdistMean > 0 and b1IRdistMean < 300 and b1IRhMean >= -1 and b1IRhMean <= 1:
                             mL.on(0, brake=True)
                             time.sleep(1)   ## let the shaking stop
 
@@ -568,8 +563,9 @@ if __name__ == "__main__":
                             # set b1lock true (1)
                             b1lock = 1
                         
-                        if compassVal >= (hailmarryCmpVal - 1) and compassVal <= (hailmarryCmpVal + 1):
+                        if compassVal >= (hailmarryCmpVal - 2) and compassVal <= (hailmarryCmpVal + 2):
                             hailmarryincr += 1
+                            print("b1 hailmarryincr = ", hailmarryincr)
                             if hailmarryincr > 2:
                                 mL.on(0, brake=True)
                                 print("Rotated searching for beacon1 too many times...")
@@ -605,17 +601,12 @@ if __name__ == "__main__":
                         # note that an ir distance of -1 means we don't even see the beacon
                         # note also that an ir distance > 300 is not trustworthy, so let's limit that
                         if (b2IRdistMean > 300 or b2IRdistMean == -1) and b2IRhMean == 0:
-                            # move fast either cw or ccw based on compass heading
-                            if compassVal >= 125:
-                                # rotate cw
-                                mL.on(10, brake=False)
-                            if compassVal < 125 or compassVal > 352:
-                                # rotate ccw
-                                mL.on(-10, brake=False)
+                            # move fast in cw direction until we pick up a beacon signal (or exceed search limit)
+                            mL.on(10, brake=False)
                         
                         # stop when heading is between -1 and 1 AND ir distance is not -1
                         # you should now have a good lock on beacon2, so grab the data
-                        if b2IRdistMean > 0 and b2IRhMean >= -1 and b2IRhMean <= 1:
+                        if b2IRdistMean > 0 and b2IRdistMean < 300 and b2IRhMean >= -1 and b2IRhMean <= 1:
                             mL.on(0, brake=True)
                             time.sleep(1)   ## let the shaking stop
 
@@ -639,8 +630,9 @@ if __name__ == "__main__":
                             # set b2lock true (1)
                             b2lock = 1
                         
-                        if compassVal >= (hailmarryCmpVal - 1) and compassVal <= (hailmarryCmpVal + 1):
+                        if compassVal >= (hailmarryCmpVal - 2) and compassVal <= (hailmarryCmpVal + 2):
                             hailmarryincr += 1
+                            print("b2 hailmarryincr = ", hailmarryincr)
                             if hailmarryincr > 2:
                                 mL.on(0, brake=True)
                                 print("Rotated searching for beacon2 too many times...")
