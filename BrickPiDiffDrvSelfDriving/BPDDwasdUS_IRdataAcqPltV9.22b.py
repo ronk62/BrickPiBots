@@ -11,6 +11,10 @@
 #                           - also adding ability to plot the data in this same program
 #                           - Note: irDistVal is currently set to int(3.19 * ir.distance()) to approximate distance in cm
 #                           - updated this version to find beacon angle using live, rotation, seek routine
+#                           - added time.sleep(0.02) during 100 sample collection
+#                           - added collection/computation of standard deviations (IR distance and heading)
+#                           - replaced hailmarry compass with hailmarry timeout
+#                           - tuned some thresholds and tweaked some settings
 
 #                           - DON'T Forget to start xming and export DISPLAY=10.0.0.9:0.0  (change IP addr as req'd)
 
@@ -454,12 +458,9 @@ if __name__ == "__main__":
                 zeroir2hangle = 400
                 zeroir2hdist = 400
 
-                # initialize compass value for each beacon search
-                hailmarryCmpVal = 180
-
-                # use this to determine if you have searched too long for one beacon
-                # increment each time to cirle 360 deg
-                hailmarryincr = 0                
+                # initialize timeout value for each beacon search
+                hailmarryTimeout = time.time()
+              
 
                 # getting beacon angle/distance data
                 print("")
@@ -496,10 +497,15 @@ if __name__ == "__main__":
                         ir1h = np.append(ir1h, ir1HeadVal)
                         ir2r = np.append(ir2r, ir2DistVal)
                         ir2h = np.append(ir2h, ir2HeadVal)
+                        time.sleep(0.02)
                     b1IRdistMean = np.mean(ir1r)
+                    b1IRdistStdev = np.std(ir1r)
                     b1IRhMean = np.mean(ir1h)
+                    b1IRhStdev = np.std(ir1h)
                     b2IRdistMean = np.mean(ir2r)
+                    b2IRdistStdev = np.std(ir2r)
                     b2IRhMean = np.mean(ir2h)
+                    b2IRhStdev = np.std(ir2h)
 
                     # show bxlock states
                     print("")
@@ -536,7 +542,7 @@ if __name__ == "__main__":
                         
                         # stop when heading is between -1 and 1 AND ir distance is not -1
                         # you should now have a good lock on beacon1, so grab the data
-                        if b1IRdistMean > 0 and b1IRdistMean < 300 and b1IRhMean >= -1 and b1IRhMean <= 1:
+                        if b1IRdistMean > 0 and b1IRdistMean < 300 and b1IRdistStdev < 3 and b1IRhMean >= -1 and b1IRhMean <= 1 and b1IRhStdev < 3:
                             mL.on(0, brake=True)
                             time.sleep(1)   ## let the shaking stop
 
@@ -554,6 +560,7 @@ if __name__ == "__main__":
                                 compassVal = cmp.value(0)
                                 cmpDeg = np.append(cmpDeg, compassVal)
                                 ir1r = np.append(ir1r, ir1DistVal)
+                                time.sleep(0.02)
                             # grab the beacon1 final output    
                             zeroir1hangle = np.mean(cmpDeg)
                             zeroir1hdist = np.mean(ir1r)
@@ -562,21 +569,17 @@ if __name__ == "__main__":
                             print("")
                             # set b1lock true (1)
                             b1lock = 1
+                            hailmarryTimeout = time.time()    # reset Timeout to setup for beacon2 search
                         
-                        if compassVal >= (hailmarryCmpVal - 2) and compassVal <= (hailmarryCmpVal + 2):
-                            hailmarryincr += 1
-                            print("b1 hailmarryincr = ", hailmarryincr)
-                            if hailmarryincr > 2:
-                                mL.on(0, brake=True)
-                                print("Rotated searching for beacon1 too many times...")
-                                print("hailmarryincr = ", hailmarryincr)
-                                print("Proceeding with search for beacon2")
-                                print("")
-                                # set b1lock true (1)
-                                b1lock = 1
-                                # reset hailmarryCmpVal and hailmarryincr to initial values
-                                hailmarryCmpVal = 180
-                                hailmarryincr = 0
+                        if  (time.time() - 45) > hailmarryTimeout:
+                            mL.on(0, brake=True)
+                            print("Searching for beacon1 too long...")
+                            print("Proceeding with search for beacon2")
+                            print("")
+                            # set b1lock true (1)
+                            b1lock = 1
+                            # reset hailmarryTimeout to initial values
+                            hailmarryTimeout = time.time()
 
                 
                     ######################
@@ -606,7 +609,7 @@ if __name__ == "__main__":
                         
                         # stop when heading is between -1 and 1 AND ir distance is not -1
                         # you should now have a good lock on beacon2, so grab the data
-                        if b2IRdistMean > 0 and b2IRdistMean < 300 and b2IRhMean >= -1 and b2IRhMean <= 1:
+                        if b2IRdistMean > 0 and b2IRdistMean < 300 and b2IRdistStdev < 3 and b2IRhMean >= -1 and b2IRhMean <= 1 and b2IRhStdev < 3:
                             mL.on(0, brake=True)
                             time.sleep(1)   ## let the shaking stop
 
@@ -624,26 +627,22 @@ if __name__ == "__main__":
                                 compassVal = cmp.value(0)
                                 cmpDeg = np.append(cmpDeg, compassVal)
                                 ir2r = np.append(ir2r, ir2DistVal)
+                                time.sleep(0.02)
                             # grab the beacon1 final output    
                             zeroir2hangle = np.mean(cmpDeg)
                             zeroir2hdist = np.mean(ir2r)
                             # set b2lock true (1)
                             b2lock = 1
                         
-                        if compassVal >= (hailmarryCmpVal - 2) and compassVal <= (hailmarryCmpVal + 2):
-                            hailmarryincr += 1
-                            print("b2 hailmarryincr = ", hailmarryincr)
-                            if hailmarryincr > 2:
-                                mL.on(0, brake=True)
-                                print("Rotated searching for beacon2 too many times...")
-                                print("hailmarryincr = ", hailmarryincr)
-                                print("Concluding beacon search")
-                                print("")
-                                # set b2lock true (1)
-                                b2lock = 1
-                                # reset hailmarryCmpVal and hailmarryincr to initial values
-                                hailmarryCmpVal = 180
-                                hailmarryincr = 0
+                        if  (time.time() - 45) > hailmarryTimeout:
+                            mL.on(0, brake=True)
+                            print("Searching for beacon2 too long...")
+                            print("Concluding beacon search")
+                            print("")
+                            # set b2lock true (1)
+                            b2lock = 1
+                            # reset hailmarryTimeout to initial values
+                            hailmarryTimeout = time.time()    # probably not needed here
 
 
                 ###################
