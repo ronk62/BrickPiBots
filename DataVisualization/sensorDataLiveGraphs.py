@@ -173,11 +173,11 @@ def animate(i):
     # global USr
     # global cmpDeg
     global ir1r, ir1h
-    # global ir2r, ir2h
+    global ir2r, ir2h
     # global printVerbose
 
     # read the sensors
-    # usDistCmVal = us.distance_centimeters
+    usDistCmVal = us.distance_centimeters
     ir1DistVal = ir.distance(channel=1)
     # ir2DistVal = ir.distance(channel=2)
     if ir1DistVal == None:
@@ -195,16 +195,16 @@ def animate(i):
     i = i + 1
 
     if printVerbose > 0:
-        print("")
-        # print ("usDistCmVal = ", usDistCmVal)
         # print("")
+        # print ("usDistCmVal = ", usDistCmVal)
+        print("")
         print ("ir1DistVal = ", ir1DistVal)
         # print("")
         print ("ir1HeadVal = ", ir1HeadVal)
         print("")
-        # print ("ir2DistVal = ", ir2DistVal)
+        print ("ir2DistVal = ", ir2DistVal)
         # print("")
-        # print ("ir2HeadVal = ", ir2HeadVal)
+        print ("ir2HeadVal = ", ir2HeadVal)
         # print("")
         # print ("compassVal = ", compassVal)
         # print("")
@@ -217,14 +217,17 @@ def animate(i):
     # cmpDeg = np.append(cmpDeg, compassVal)
     ir1r = np.append(ir1r, ir1DistVal)
     ir1h = np.append(ir1h, ir1HeadVal)
-    # ir2r = np.append(ir2r, ir2DistVal)
-    # ir2h = np.append(ir2h, ir2HeadVal)
+    ir2r = np.append(ir2r, ir2DistVal)
+    ir2h = np.append(ir2h, ir2HeadVal)
 
     ax1.clear()
+    # ax1.plot(ODt, USr)
     ax1.plot(ODt, ir1r)
+    ax1.plot(ODt, ir2r)
 
     ax2.clear()
     ax2.plot(ODt, ir1h)
+    ax2.plot(ODt, ir2h)
 
     if ODt.size > 100000:
         sample_mode = -1
