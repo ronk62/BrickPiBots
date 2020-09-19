@@ -15,6 +15,9 @@
 #                           - added collection/computation of standard deviations (IR distance and heading)
 #                           - replaced hailmarry compass with hailmarry timeout
 #                           - tuned some thresholds and tweaked some settings
+#                           - still seeing some strange heading values when beacon is to far left or right,
+#                             esp when the beacon is slightly behind - and a short distance from - the IR sensor
+#                           - I noticed I was missing the statement ir.mode = 'IR-SEEK' so I added that (9/19/2020)
 
 #                           - DON'T Forget to start xming and export DISPLAY=10.0.0.9:0.0  (change IP addr as req'd)
 
@@ -109,6 +112,7 @@ ir = InfraredSensor(INPUT_3)
 # allow for some time to load the new drivers
 time.sleep(0.5)
 
+ir.mode = 'IR-SEEK'
 #ir1ProxVal = 100
 #prev_ir1ProxVal = 0
 ir1DistVal = 0
@@ -460,6 +464,9 @@ if __name__ == "__main__":
 
                 # initialize timeout value for each beacon search
                 hailmarryTimeout = time.time()
+
+                # initialize another var to measure timing in various segments of the code
+                tic = 0
               
 
                 # getting beacon angle/distance data
@@ -475,8 +482,9 @@ if __name__ == "__main__":
                     ir2r = np.array([], dtype=np.int32)
                     ir2h = np.array([], dtype=np.int32)
 
-                    # take 100 samples
-                    for j in range(100):
+                    # take 25 samples
+                    tic = time.time()       # start the timer
+                    for j in range(25):
                         usDistCmVal = us.distance_centimeters
                         ir1DistVal = ir.distance(channel=1)
                         ir2DistVal = ir.distance(channel=2)
@@ -506,6 +514,10 @@ if __name__ == "__main__":
                     b2IRdistStdev = np.std(ir2r)
                     b2IRhMean = np.mean(ir2h)
                     b2IRhStdev = np.std(ir2h)
+                    # show timer
+                    print("")
+                    print("time to take 25 samples, append np arrays, and gather stats:  ", time.time() - tic)
+                    print("")
 
                     # show bxlock states
                     print("")
@@ -549,7 +561,7 @@ if __name__ == "__main__":
                         
                         # stop when heading is between -1 and 1 AND ir distance is not -1
                         # you should now have a good lock on beacon1, so grab the data
-                        if b1IRdistMean > 0 and b1IRdistMean < 300 and b1IRdistStdev < 3 and b1IRhMean >= -1 and b1IRhMean <= 1 and b1IRhStdev < 3:
+                        if b1IRdistMean > 0 and b1IRdistMean < 300 and b1IRdistStdev < 3 and b1IRhMean == 0 and b1IRhStdev < 3:   # changed to b1IRhMean == 0, 9/19/2020, 2:45p
                             mL.on(0, brake=True)
                             time.sleep(1)   ## let the shaking stop
 
@@ -557,8 +569,8 @@ if __name__ == "__main__":
                             cmpDeg = np.array([], dtype=np.int32)
                             ir1r = np.array([], dtype=np.int32)
 
-                            # take 100 samples
-                            for j in range(100):
+                            # take 25 samples
+                            for j in range(25):
                                 ir1DistVal = ir.distance(channel=1)
                                 if ir1DistVal == None:
                                     ir1DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
