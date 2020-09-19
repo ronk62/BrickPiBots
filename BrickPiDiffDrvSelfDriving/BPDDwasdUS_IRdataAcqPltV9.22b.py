@@ -509,7 +509,10 @@ if __name__ == "__main__":
 
                     # show bxlock states
                     print("")
-                    print("b1lock state = ", b1lock)
+                    print("time, b1lock state = ", time.time() - hailmarryTimeout, b1lock)
+                    print("b1IRdistMean, b1IRdistStdev = ", b1IRdistMean, b1IRdistStdev)
+                    print("b1IRhMean, b1IRhStdev = ", b1IRhMean, b1IRhStdev)
+                    print("compassVal = ", compassVal)
                     print("")
                     print("b2lock state = ", b2lock)
                     print("")
@@ -519,19 +522,22 @@ if __name__ == "__main__":
 
                     # if we don't have the beacon1 angle/distance yet, rotate to find those
                     if not b1lock:
-                        if b1IRhMean < -15:
+                        if b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean < -15:
                             # move ccw med fast
                             mL.on(-5, brake=False)
-                        elif b1IRhMean < -1:
+                            print("move ccw med fast; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
+                        elif b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean < 0:
                             # move ccw slow
                             mL.on(-1, brake=False)
-
-                        if b1IRhMean > 15:
+                            print("move ccw slow; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
+                        if b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean > 15:
                             # move cw med fast
                             mL.on(5, brake=False)
-                        elif b1IRhMean > 1:
+                            print("move cw med fast; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
+                        elif b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean > 0:
                             # move cw slow
                             mL.on(1, brake=False)
+                            print("move cw slow; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
 
                         # if we don't see a valid +25 or -25 heading, turn med fast until we do
                         # note that an ir distance of -1 means we don't even see the beacon
@@ -539,6 +545,7 @@ if __name__ == "__main__":
                         if (b1IRdistMean > 300 or b1IRdistMean == -1) and b1IRhMean == 0:
                             # move fast in cw direction until we pick up a beacon signal (or exceed search limit)
                             mL.on(10, brake=False)
+                            print("move fast in cw direction; b1IRdistMean, b1IRhMean", b1IRdistMean, b1IRhMean)
                         
                         # stop when heading is between -1 and 1 AND ir distance is not -1
                         # you should now have a good lock on beacon1, so grab the data
@@ -586,17 +593,17 @@ if __name__ == "__main__":
 
                     # if we DO have the beacon1 angle/distance, but not beacon2, rotate to find those
                     if b1lock and not b2lock:
-                        if b2IRhMean < -15:
+                        if b2IRdistMean > 0 and b2IRdistMean < 300 and b2IRdistStdev < 3 and b2IRhMean < -15:
                             # move ccw med fast
                             mL.on(-5, brake=False)
-                        elif b2IRhMean < -1:
+                        elif b2IRdistMean > 0 and b2IRdistMean < 300 and b2IRdistStdev < 3 and b2IRhMean < -1:
                             # move ccw slow
                             mL.on(-1, brake=False)
 
-                        if b2IRhMean > 15:
+                        if b2IRdistMean > 0 and b2IRdistMean < 300 and b2IRdistStdev < 3 and b2IRhMean > 15:
                             # move cw med fast
                             mL.on(5, brake=False)
-                        elif b2IRhMean > 1:
+                        elif b2IRdistMean > 0 and b2IRdistMean < 300 and b2IRdistStdev < 3 and b2IRhMean > 1:
                             # move cw slow
                             mL.on(1, brake=False)
 
