@@ -27,6 +27,7 @@ ir = InfraredSensor(INPUT_3)
 # allow for some time to load the new drivers
 time.sleep(0.5)
 
+ir.mode = 'IR-SEEK'
 irProxVal = 0
 prev_irProxVal = 0
 irDistVal = 0
@@ -43,7 +44,7 @@ print("#######################################################################")
 startTime = time.time()
 
 while (time.time() - startTime < 600):
-    ir.mode = 'IR-SEEK'
+    # ir.mode = 'IR-SEEK'
     irHeadVal = ir.value(0)       ### value(0) is the channel-1 heading value in this mode
     irDistVal = ir.value(1)       ### value(1) is the channel-1 distance value in this mode
     # irHeadVal = ir.heading(channel=1)   ### value(0) is the heading value in this mode
