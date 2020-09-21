@@ -92,6 +92,7 @@ ir = InfraredSensor(INPUT_3)
 # allow for some time to load the new drivers
 time.sleep(0.5)
 
+ir.mode = 'IR-SEEK'
 #ir1ProxVal = 100
 #prev_ir1ProxVal = 0
 ir1DistVal = 0
@@ -222,12 +223,14 @@ def animate(i):
 
     ax1.clear()
     # ax1.plot(ODt, USr)
-    ax1.plot(ODt, ir1r)
-    ax1.plot(ODt, ir2r)
+    ax1.plot(ODt, ir1r, label='ir1r')
+    ax1.plot(ODt, ir2r, label='ir2r')
+    ax1.legend()
 
     ax2.clear()
-    ax2.plot(ODt, ir1h)
-    ax2.plot(ODt, ir2h)
+    ax2.plot(ODt, ir1h, label='ir1h')
+    ax2.plot(ODt, ir2h, label='ir2h')
+    ax2.legend()
 
     if ODt.size > 100000:
         sample_mode = -1
