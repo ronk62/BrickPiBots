@@ -534,18 +534,18 @@ if __name__ == "__main__":
 
                     # if we don't have the beacon1 angle/distance yet, rotate to find those
                     if not b1lock:
-                        if b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean < -15:
-                            # move ccw med fast
-                            mL.on(-5, brake=False)
-                            print("move ccw med fast; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
+                        if b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean < -20:
+                            # move ccw med slow
+                            mL.on(-3, brake=False)
+                            print("move ccw med slow; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
                         elif b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean < 0:
                             # move ccw slow
                             mL.on(-1, brake=False)
                             print("move ccw slow; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
-                        if b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean > 15:
-                            # move cw med fast
-                            mL.on(5, brake=False)
-                            print("move cw med fast; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
+                        if b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean > 20:
+                            # move cw med slow
+                            mL.on(3, brake=False)
+                            print("move cw med slow; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
                         elif b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean > 0:
                             # move cw slow
                             mL.on(1, brake=False)
@@ -556,12 +556,12 @@ if __name__ == "__main__":
                         # note also that an ir distance > 300 is not trustworthy, so let's limit that
                         if (b1IRdistMean > 300 or b1IRdistMean == -1) and b1IRhMean == 0:
                             # move fast in cw direction until we pick up a beacon signal (or exceed search limit)
-                            mL.on(10, brake=False)
+                            mL.on(7, brake=False)
                             print("move fast in cw direction; b1IRdistMean, b1IRhMean", b1IRdistMean, b1IRhMean)
                         
                         # stop when heading is between -1 and 1 AND ir distance is not -1
                         # you should now have a good lock on beacon1, so grab the data
-                        if b1IRdistMean > 0 and b1IRdistMean < 300 and b1IRdistStdev < 3 and b1IRhMean == 0 and b1IRhStdev < 3:   # changed to b1IRhMean == 0, 9/19/2020, 2:45p
+                        if b1IRdistMean > 0 and b1IRdistMean < 300 and b1IRdistStdev < 3 and b1IRhMean >= -0.7 and b1IRhMean <= 0.7 and b1IRhStdev < 3:
                             mL.on(0, brake=True)
                             time.sleep(1)   ## let the shaking stop
 
@@ -590,7 +590,7 @@ if __name__ == "__main__":
                             b1lock = 1
                             hailmarryTimeout = time.time()    # reset Timeout to setup for beacon2 search
                         
-                        if  (time.time() - 90) > hailmarryTimeout:
+                        if  (time.time() - 45) > hailmarryTimeout:
                             mL.on(0, brake=True)
                             print("Searching for beacon1 too long...")
                             print("Proceeding with search for beacon2")
@@ -653,7 +653,7 @@ if __name__ == "__main__":
                             # set b2lock true (1)
                             b2lock = 1
                         
-                        if  (time.time() - 90) > hailmarryTimeout:
+                        if  (time.time() - 45) > hailmarryTimeout:
                             mL.on(0, brake=True)
                             print("Searching for beacon2 too long...")
                             print("Concluding beacon search")
