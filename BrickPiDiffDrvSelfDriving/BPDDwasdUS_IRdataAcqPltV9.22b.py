@@ -520,14 +520,24 @@ if __name__ == "__main__":
                     print("")
 
                     # show bxlock states
-                    print("")
-                    print("time, b1lock state = ", time.time() - hailmarryTimeout, b1lock)
-                    print("b1IRdistMean, b1IRdistStdev = ", b1IRdistMean, b1IRdistStdev)
-                    print("b1IRhMean, b1IRhStdev = ", b1IRhMean, b1IRhStdev)
-                    print("compassVal = ", compassVal)
-                    print("")
-                    print("b2lock state = ", b2lock)
-                    print("")
+                    if not b1lock:
+                        print("")
+                        print("time, b1lock state = ", time.time() - hailmarryTimeout, b1lock)
+                        print("b1IRdistMean, b1IRdistStdev = ", b1IRdistMean, b1IRdistStdev)
+                        print("b1IRhMean, b1IRhStdev = ", b1IRhMean, b1IRhStdev)
+                        print("compassVal = ", compassVal)
+                        print("")
+                        print("b2lock state = ", b2lock)
+                        print("")
+                    elif b1lock:
+                        print("")
+                        print("time, b2lock state = ", time.time() - hailmarryTimeout, b2lock)
+                        print("b2IRdistMean, b2IRdistStdev = ", b2IRdistMean, b2IRdistStdev)
+                        print("b2IRhMean, b2IRhStdev = ", b2IRhMean, b2IRhStdev)
+                        print("compassVal = ", compassVal)
+                        print("")
+                        print("b2lock state = ", b2lock)
+                        print("")
 
 
                     ######################
@@ -559,7 +569,7 @@ if __name__ == "__main__":
                             mL.on(7, brake=False)
                             print("move fast in cw direction; b1IRdistMean, b1IRhMean", b1IRdistMean, b1IRhMean)
                         
-                        # stop when heading is between -1 and 1 AND ir distance is not -1
+                        # stop when heading is between -0.7 and 0.7 AND ir distance is not -1
                         # you should now have a good lock on beacon1, so grab the data
                         if b1IRdistMean > 0 and b1IRdistMean < 300 and b1IRdistStdev < 3 and b1IRhMean >= -0.7 and b1IRhMean <= 0.7 and b1IRhStdev < 3:
                             mL.on(0, brake=True)
@@ -590,7 +600,7 @@ if __name__ == "__main__":
                             b1lock = 1
                             hailmarryTimeout = time.time()    # reset Timeout to setup for beacon2 search
                         
-                        if  (time.time() - 45) > hailmarryTimeout:
+                        if  (time.time() - 60) > hailmarryTimeout:
                             mL.on(0, brake=True)
                             print("Searching for beacon1 too long...")
                             print("Proceeding with search for beacon2")
@@ -605,30 +615,34 @@ if __name__ == "__main__":
 
                     # if we DO have the beacon1 angle/distance, but not beacon2, rotate to find those
                     if b1lock and not b2lock:
-                        if b2IRdistMean > 0 and b2IRdistMean < 300 and b2IRdistStdev < 3 and b2IRhMean < -15:
-                            # move ccw med fast
-                            mL.on(-5, brake=False)
-                        elif b2IRdistMean > 0 and b2IRdistMean < 300 and b2IRdistStdev < 3 and b2IRhMean < -1:
+                        if b2IRdistMean > 0 and b2IRhStdev < 3 and b2IRhMean < -20:
+                            # move ccw med slow
+                            mL.on(-3, brake=False)
+                            print("move ccw med slow; b2IRdistMean, b2IRhMean, b2IRhStdev", b2IRdistMean, b2IRhMean, b2IRhStdev)
+                        elif b2IRdistMean > 0 and b2IRhStdev < 3 and b2IRhMean < 0:
                             # move ccw slow
                             mL.on(-1, brake=False)
-
-                        if b2IRdistMean > 0 and b2IRdistMean < 300 and b2IRdistStdev < 3 and b2IRhMean > 15:
-                            # move cw med fast
-                            mL.on(5, brake=False)
-                        elif b2IRdistMean > 0 and b2IRdistMean < 300 and b2IRdistStdev < 3 and b2IRhMean > 1:
+                            print("move ccw slow; b2IRdistMean, b2IRhMean, b2IRhStdev", b2IRdistMean, b2IRhMean, b2IRhStdev)
+                        if b2IRdistMean > 0 and b2IRhStdev < 3 and b2IRhMean > 20:
+                            # move cw med slow
+                            mL.on(3, brake=False)
+                            print("move cw med slow; b2IRdistMean, b2IRhMean, b2IRhStdev", b2IRdistMean, b2IRhMean, b2IRhStdev)
+                        elif b2IRdistMean > 0 and b2IRhStdev < 3 and b2IRhMean > 0:
                             # move cw slow
                             mL.on(1, brake=False)
+                            print("move cw slow; b2IRdistMean, b2IRhMean, b2IRhStdev", b2IRdistMean, b2IRhMean, b2IRhStdev)
 
                         # if we don't see a valid +25 or -25 heading, turn med fast until we do
                         # note that an ir distance of -1 means we don't even see the beacon
                         # note also that an ir distance > 300 is not trustworthy, so let's limit that
                         if (b2IRdistMean > 300 or b2IRdistMean == -1) and b2IRhMean == 0:
                             # move fast in cw direction until we pick up a beacon signal (or exceed search limit)
-                            mL.on(10, brake=False)
+                            mL.on(7, brake=False)
+                            print("move fast in cw direction; b2IRdistMean, b2IRhMean", b2IRdistMean, b2IRhMean)
                         
-                        # stop when heading is between -1 and 1 AND ir distance is not -1
+                        # stop when heading is between -0.7 and 0.7 AND ir distance is not -1
                         # you should now have a good lock on beacon2, so grab the data
-                        if b2IRdistMean > 0 and b2IRdistMean < 300 and b2IRdistStdev < 3 and b2IRhMean >= -1 and b2IRhMean <= 1 and b2IRhStdev < 3:
+                        if b2IRdistMean > 0 and b2IRdistMean < 300 and b2IRdistStdev < 3 and b2IRhMean >= -0.7 and b2IRhMean <= 0.7 and b2IRhStdev < 3:
                             mL.on(0, brake=True)
                             time.sleep(1)   ## let the shaking stop
 
@@ -636,8 +650,8 @@ if __name__ == "__main__":
                             cmpDeg = np.array([], dtype=np.int32)
                             ir2r = np.array([], dtype=np.int32)
 
-                            # take 100 samples
-                            for j in range(100):
+                            # take 25 samples
+                            for j in range(25):
                                 ir2DistVal = ir.distance(channel=2)
                                 if ir2DistVal == None:
                                     ir2DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
@@ -647,13 +661,16 @@ if __name__ == "__main__":
                                 cmpDeg = np.append(cmpDeg, compassVal)
                                 ir2r = np.append(ir2r, ir2DistVal)
                                 time.sleep(0.01)
-                            # grab the beacon1 final output    
+                            # grab the beacon2 final output    
                             zeroir2hangle = np.mean(cmpDeg)
                             zeroir2hdist = np.mean(ir2r)
+                            print("zeroir2hangle = ", zeroir2hangle)
+                            print("zeroir2hdist = ", zeroir2hdist)
+                            print("")
                             # set b2lock true (1)
                             b2lock = 1
                         
-                        if  (time.time() - 45) > hailmarryTimeout:
+                        if  (time.time() - 60) > hailmarryTimeout:
                             mL.on(0, brake=True)
                             print("Searching for beacon2 too long...")
                             print("Concluding beacon search")
