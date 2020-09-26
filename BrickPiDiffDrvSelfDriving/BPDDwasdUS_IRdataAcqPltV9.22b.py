@@ -9,7 +9,6 @@
 #                           - using IR sensor (distance mode in cm) and two channels with two beacons, which will enable
 #                           triangulation of two landmarks, and possibly some use of the distance data as well
 #                           - also adding ability to plot the data in this same program
-#                           - Note: irDistVal is currently set to int(3.19 * ir.distance()) to approximate distance in cm
 #                           - updated this version to find beacon angle using live, rotation, seek routine
 #                           - added time.sleep(0.01) during 100 sample collection
 #                           - added collection/computation of standard deviations (IR distance and heading)
@@ -18,6 +17,7 @@
 #                           - still seeing some strange heading values when beacon is to far left or right,
 #                             esp when the beacon is slightly behind - and a short distance from - the IR sensor
 #                           - I noticed I was missing the statement ir.mode = 'IR-SEEK' so I added that (9/19/2020)
+#                           - added self-calibration routines for IR sensors
 
 #                           - DON'T Forget to start xming and export DISPLAY=10.0.0.9:0.0  (change IP addr as req'd)
 
@@ -36,6 +36,7 @@ import time, tty, sys, threading
 import matplotlib.pyplot as plt
 import numpy as np
 from math import sin, cos, radians
+from scipy import stats
 from ev3dev2 import list_devices
 from ev3dev2.port import LegoPort
 from ev3dev2.motor import LargeMotor, OUTPUT_A, OUTPUT_B, SpeedPercent, SpeedDPS, MoveTank
@@ -152,6 +153,7 @@ USmean = np.array([], dtype=np.int32)    # array to hold processed data US-mean
 USstd = np.array([], dtype=np.int32)     # array to hold processed data US-stdev
 cmpMean = np.array([], dtype=np.int32)   # array to hold processed data cmps-mean
 ODt = np.array([], dtype=np.int32)                  # array to index each time/tick (x axis independant var)
+
 # added IR1
 ir1r = np.array([], dtype=np.int32)       # array to hold 'r' - ir1 distance r (in approx cm)
 ir1rmean = np.array([], dtype=np.int32)   # array to hold processed data ir1r-mean
@@ -159,6 +161,7 @@ ir1rstd = np.array([], dtype=np.int32)    # array to hold processed data ir1r-st
 ir1h = np.array([], dtype=np.int32)       # array to hold 'h' - ir1 heading h (in +/- deg off-center)
 ir1hmean = np.array([], dtype=np.int32)   # array to hold processed data ir1 heading mean
 ir1hstd = np.array([], dtype=np.int32)    # array to hold processed data ir1 heading stdev
+
 # added IR2
 ir2r = np.array([], dtype=np.int32)       # array to hold 'r' - ir2 distance r (in approx cm)
 ir2rmean = np.array([], dtype=np.int32)   # array to hold processed data ir2r-mean
@@ -166,6 +169,13 @@ ir2rstd = np.array([], dtype=np.int32)    # array to hold processed data ir2r-st
 ir2h = np.array([], dtype=np.int32)       # array to hold 'h' - ir2 heading h (in +/- deg off-center)
 ir2hmean = np.array([], dtype=np.int32)   # array to hold processed data ir2 heading mean
 ir2hstd = np.array([], dtype=np.int32)    # array to hold processed data ir2 heading stdev
+
+# IR calibration vars
+beaconCali_mode = 0
+ir1DistCaliK = 1
+ir1DistCaliOffset = 0
+ir2DistCaliK = 1
+ir2DistCaliOffset = 0
 
 
 
@@ -219,7 +229,7 @@ if __name__ == "__main__":
         if ir1DistVal == None:
             ir1DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
         else:
-            ir1DistVal = int(3.19 * ir1DistVal)
+            ir1DistVal = int((ir1DistCaliK * ir1DistVal) + ir1DistCaliOffset)
         ir1HeadVal = ir.heading(channel=1)
         if (ir1DistVal != prev_ir1DistVal):
             if printVerbose > 0:
@@ -232,7 +242,7 @@ if __name__ == "__main__":
         if ir2DistVal == None:
             ir2DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
         else:
-            ir2DistVal = int(3.19 * ir2DistVal)
+            ir2DistVal = int((ir2DistCaliK * ir2DistVal) + ir2DistCaliOffset)
         ir2HeadVal = ir.heading(channel=2)
         if (ir2DistVal != prev_ir2DistVal):
             if printVerbose > 0:
@@ -441,8 +451,45 @@ if __name__ == "__main__":
             plt.show()
 
 
+        if x == 49: # 1 pushed - self-calibration routine for IR1 sensor
+            ir1DistVal = ir.distance(channel=1)
+            if ir1DistVal == None:
+                x == 0
+                print("")
+                print("beacon1 not found...ir1DistVal =   ", ir1DistVal)
+                print("make sure beacon1 is on and in range")
+                print("")
+                time.sleep(3)
+            else:
+                sample_mode = 1
+                beaconCali_mode = 1
+                print("")
+                print("sample_mode now set to...  ", sample_mode)
+                print("and beaconCali_mode now set to ...  ", beaconCali_mode)
+                print("")
+
+        if x == 50: # 2 pushed - self-calibration routine for IR2 sensor
+            ir2DistVal = ir.distance(channel=2)
+            if ir2DistVal == None:
+                x == 0
+                print("")
+                print("beacon2 not found...ir2DistVal =   ", ir2DistVal)
+                print("make sure beacon2 is on and in range")
+                print("")
+                time.sleep(3)
+            else:
+                sample_mode = 1
+                beaconCali_mode = 2
+                print("")
+                print("sample_mode now set to...  ", sample_mode)
+                print("and beaconCali_mode now set to ...  ", beaconCali_mode)
+                print("")
+
+
         if x == 105: # i pushed - toggle sample mode on and off
             sample_mode *= -1
+            # ensure beaconCali_mode set to 0 (not calibrating)
+            beaconCali_mode = 0
             print("toggled sample_mode (i); now set to...  ", sample_mode)
         
         
@@ -450,249 +497,348 @@ if __name__ == "__main__":
 
         if sample_mode > 0:
             try:
-                # setup for beacon angle/distance data capture
-                b1lock = 0
-                b1IRdistMean = -1
-                b1IRhMean = 400
-                zeroir1hangle = 400
-                zeroir1hdist = 400
-                b2lock = 0
-                b2IRdistMean = -1
-                b2IRhMean = 400
-                zeroir2hangle = 400
-                zeroir2hdist = 400
+                # reset/initialize additional beacon cali arrays
+                USmean = np.array([], dtype=np.int32)
+                ir1rmeanCali = np.array([], dtype=np.int32)
+                ir2rmeanCali = np.array([], dtype=np.int32)
 
-                # initialize timeout value for each beacon search
-                hailmarryTimeout = time.time()
+                if beaconCali_mode == 1 or beaconCali_mode == 2:
+                    # calibrate IR distance senors using US dist as ref
+                    print("")
+                    print("Make sure robot is facing a flat wall or surface with no interference with US")
+                    print("and that beacon1 is next to the wall, on, and facing the robot")
+                    print("Start at 250cm US distance")
+                    print("")
+                    # set cycleCount
+                    cycleCount = 24  # used during 'for i in range() below, so it iterates 24 times
+                    time.sleep(5)
+
 
                 # initialize another var to measure timing in various segments of the code
                 tic = 0
-              
-
-                # getting beacon angle/distance data
-                print("")
-                print("getting beacon angle/distance data")
-                print("")
-                while not b1lock or not b2lock:
-                    # init the data collection arrays for each collection series
-                    USr = np.array([], dtype=np.int32)
-                    cmpDeg = np.array([], dtype=np.int32)
-                    ir1r = np.array([], dtype=np.int32)
-                    ir1h = np.array([], dtype=np.int32)
-                    ir2r = np.array([], dtype=np.int32)
-                    ir2h = np.array([], dtype=np.int32)
-
-                    # take 25 samples
-                    tic = time.time()       # start the timer
-                    for j in range(25):
-                        usDistCmVal = us.distance_centimeters
-                        ir1DistVal = ir.distance(channel=1)
-                        ir2DistVal = ir.distance(channel=2)
-                        if ir1DistVal == None:
-                            ir1DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
-                        else:
-                            ir1DistVal = int(3.19 * ir1DistVal)
-                        ir1HeadVal = ir.heading(channel=1)
-                        if ir2DistVal == None:
-                            ir2DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
-                        else:
-                            ir2DistVal = int(3.19 * ir2DistVal)
-                        ir2HeadVal = ir.heading(channel=2)
-                        compassVal = cmp.value(0)
-                        USr = np.append(USr, usDistCmVal)
-                        cmpDeg = np.append(cmpDeg, compassVal)
-                        ir1r = np.append(ir1r, ir1DistVal)
-                        ir1h = np.append(ir1h, ir1HeadVal)
-                        ir2r = np.append(ir2r, ir2DistVal)
-                        ir2h = np.append(ir2h, ir2HeadVal)
-                        time.sleep(0.01)
-                    b1IRdistMean = np.mean(ir1r)
-                    b1IRdistStdev = np.std(ir1r)
-                    b1IRhMean = np.mean(ir1h)
-                    b1IRhStdev = np.std(ir1h)
-                    b2IRdistMean = np.mean(ir2r)
-                    b2IRdistStdev = np.std(ir2r)
-                    b2IRhMean = np.mean(ir2h)
-                    b2IRhStdev = np.std(ir2h)
-                    # show timer
-                    print("")
-                    print("time to take 25 samples, append np arrays, and gather stats:  ", time.time() - tic)
-                    print("")
-
-                    # show bxlock states
-                    if not b1lock:
-                        print("")
-                        print("time, b1lock state = ", time.time() - hailmarryTimeout, b1lock)
-                        print("b1IRdistMean, b1IRdistStdev = ", b1IRdistMean, b1IRdistStdev)
-                        print("b1IRhMean, b1IRhStdev = ", b1IRhMean, b1IRhStdev)
-                        print("compassVal = ", compassVal)
-                        print("")
-                        print("b2lock state = ", b2lock)
-                        print("")
-                    elif b1lock:
-                        print("")
-                        print("time, b2lock state = ", time.time() - hailmarryTimeout, b2lock)
-                        print("b2IRdistMean, b2IRdistStdev = ", b2IRdistMean, b2IRdistStdev)
-                        print("b2IRhMean, b2IRhStdev = ", b2IRhMean, b2IRhStdev)
-                        print("compassVal = ", compassVal)
-                        print("")
-                        print("b2lock state = ", b2lock)
-                        print("")
-
-
-                    ######################
-
-                    # if we don't have the beacon1 angle/distance yet, rotate to find those
-                    if not b1lock:
-                        if b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean < -20:
-                            # move ccw med slow
-                            mL.on(-3, brake=False)
-                            print("move ccw med slow; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
-                        elif b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean < 0:
-                            # move ccw slow
-                            mL.on(-1, brake=False)
-                            print("move ccw slow; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
-                        if b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean > 20:
-                            # move cw med slow
-                            mL.on(3, brake=False)
-                            print("move cw med slow; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
-                        elif b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean > 0:
-                            # move cw slow
-                            mL.on(1, brake=False)
-                            print("move cw slow; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
-
-                        # if we don't see a valid +25 or -25 heading, turn med fast until we do
-                        # note that an ir distance of -1 means we don't even see the beacon
-                        # note also that an ir distance > 300 is not trustworthy, so let's limit that
-                        if (b1IRdistMean > 300 or b1IRdistMean == -1) and b1IRhMean == 0:
-                            # move fast in cw direction until we pick up a beacon signal (or exceed search limit)
-                            mL.on(7, brake=False)
-                            print("move fast in cw direction; b1IRdistMean, b1IRhMean", b1IRdistMean, b1IRhMean)
-                        
-                        # stop when heading is between -0.7 and 0.7 AND ir distance is not -1
-                        # you should now have a good lock on beacon1, so grab the data
-                        if b1IRdistMean > 0 and b1IRdistMean < 300 and b1IRdistStdev < 3 and b1IRhMean >= -0.7 and b1IRhMean <= 0.7 and b1IRhStdev < 3:
-                            mL.on(0, brake=True)
-                            time.sleep(1)   ## let the shaking stop
-
-                            # init the data collection arrays for each collection series
-                            cmpDeg = np.array([], dtype=np.int32)
-                            ir1r = np.array([], dtype=np.int32)
-
-                            # take 25 samples
-                            for j in range(25):
-                                ir1DistVal = ir.distance(channel=1)
-                                if ir1DistVal == None:
-                                    ir1DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
-                                else:
-                                    ir1DistVal = int(3.19 * ir1DistVal)
-                                compassVal = cmp.value(0)
-                                cmpDeg = np.append(cmpDeg, compassVal)
-                                ir1r = np.append(ir1r, ir1DistVal)
-                                time.sleep(0.01)
-                            # grab the beacon1 final output    
-                            zeroir1hangle = np.mean(cmpDeg)
-                            zeroir1hdist = np.mean(ir1r)
-                            print("zeroir1hangle = ", zeroir1hangle)
-                            print("zeroir1hdist = ", zeroir1hdist)
-                            print("")
-                            # set b1lock true (1)
-                            b1lock = 1
-                            hailmarryTimeout = time.time()    # reset Timeout to setup for beacon2 search
-                        
-                        if  (time.time() - 60) > hailmarryTimeout:
-                            mL.on(0, brake=True)
-                            print("Searching for beacon1 too long...")
-                            print("Proceeding with search for beacon2")
-                            print("")
-                            # set b1lock true (1)
-                            b1lock = 1
-                            # reset hailmarryTimeout to initial values
-                            hailmarryTimeout = time.time()
 
                 
-                    ######################
-
-                    # if we DO have the beacon1 angle/distance, but not beacon2, rotate to find those
-                    if b1lock and not b2lock:
-                        if b2IRdistMean > 0 and b2IRhStdev < 3 and b2IRhMean < -20:
-                            # move ccw med slow
-                            mL.on(-3, brake=False)
-                            print("move ccw med slow; b2IRdistMean, b2IRhMean, b2IRhStdev", b2IRdistMean, b2IRhMean, b2IRhStdev)
-                        elif b2IRdistMean > 0 and b2IRhStdev < 3 and b2IRhMean < 0:
-                            # move ccw slow
-                            mL.on(-1, brake=False)
-                            print("move ccw slow; b2IRdistMean, b2IRhMean, b2IRhStdev", b2IRdistMean, b2IRhMean, b2IRhStdev)
-                        if b2IRdistMean > 0 and b2IRhStdev < 3 and b2IRhMean > 20:
-                            # move cw med slow
-                            mL.on(3, brake=False)
-                            print("move cw med slow; b2IRdistMean, b2IRhMean, b2IRhStdev", b2IRdistMean, b2IRhMean, b2IRhStdev)
-                        elif b2IRdistMean > 0 and b2IRhStdev < 3 and b2IRhMean > 0:
-                            # move cw slow
-                            mL.on(1, brake=False)
-                            print("move cw slow; b2IRdistMean, b2IRhMean, b2IRhStdev", b2IRdistMean, b2IRhMean, b2IRhStdev)
-
-                        # if we don't see a valid +25 or -25 heading, turn med fast until we do
-                        # note that an ir distance of -1 means we don't even see the beacon
-                        # note also that an ir distance > 300 is not trustworthy, so let's limit that
-                        if (b2IRdistMean > 300 or b2IRdistMean == -1) and b2IRhMean == 0:
-                            # move fast in cw direction until we pick up a beacon signal (or exceed search limit)
-                            mL.on(7, brake=False)
-                            print("move fast in cw direction; b2IRdistMean, b2IRhMean", b2IRdistMean, b2IRhMean)
-                        
-                        # stop when heading is between -0.7 and 0.7 AND ir distance is not -1
-                        # you should now have a good lock on beacon2, so grab the data
-                        if b2IRdistMean > 0 and b2IRdistMean < 300 and b2IRdistStdev < 3 and b2IRhMean >= -0.7 and b2IRhMean <= 0.7 and b2IRhStdev < 3:
-                            mL.on(0, brake=True)
-                            time.sleep(1)   ## let the shaking stop
-
-                            # init the data collection arrays for each collection series
-                            cmpDeg = np.array([], dtype=np.int32)
-                            ir2r = np.array([], dtype=np.int32)
-
-                            # take 25 samples
-                            for j in range(25):
-                                ir2DistVal = ir.distance(channel=2)
-                                if ir2DistVal == None:
-                                    ir2DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
-                                else:
-                                    ir2DistVal = int(3.19 * ir2DistVal)
-                                compassVal = cmp.value(0)
-                                cmpDeg = np.append(cmpDeg, compassVal)
-                                ir2r = np.append(ir2r, ir2DistVal)
-                                time.sleep(0.01)
-                            # grab the beacon2 final output    
-                            zeroir2hangle = np.mean(cmpDeg)
-                            zeroir2hdist = np.mean(ir2r)
-                            print("zeroir2hangle = ", zeroir2hangle)
-                            print("zeroir2hdist = ", zeroir2hdist)
-                            print("")
-                            # set b2lock true (1)
-                            b2lock = 1
-                        
-                        if  (time.time() - 60) > hailmarryTimeout:
-                            mL.on(0, brake=True)
-                            print("Searching for beacon2 too long...")
-                            print("Concluding beacon search")
-                            print("")
-                            # set b2lock true (1)
-                            b2lock = 1
-                            # reset hailmarryTimeout to initial values
-                            hailmarryTimeout = time.time()    # probably not needed here
-
-
-                ###################
+                if beaconCali_mode == 0:
+                    # getting beacon angle/distance data
+                    print("")
+                    print("getting beacon angle/distance data")
+                    print("")
+                    # set cycleCount
+                    cycleCount = 2  # used during 'for i in range() below, so this iterates 1 time
                 
-                print("")
-                print("")
-                print("zeroir1hangle = ", zeroir1hangle)
-                print("zeroir1hdist = ", zeroir1hdist)
-                print("")
-                print("zeroir2hangle = ", zeroir2hangle)
-                print("zeroir2hdist = ", zeroir2hdist)
-                print("")
-                print("")
+                for i in range(1,cycleCount):
+                    # for Cali cycles, iterate 25 times, moving 10cm closer to IR beacon each time
+                    # center the IR heading (close to heading '0' as possible)
+                    # then capture US and IR distance data, append to arrays
+                    # for non-Cali cycles, iterate just once, gathering IR distance and angle (each beacon)
 
+                    # setup for beacon cal and/or angle/distance data capture
+                    if beaconCali_mode == 2:
+                        b1lock = 1      # skip b1lock processing; we're doing ir2 cali
+                    else:
+                        b1lock = 0
+                    b1IRdistMean = -1
+                    b1IRhMean = 400
+                    zeroir1hangle = 400
+                    zeroir1hdist = 400
+                    if beaconCali_mode == 1:
+                        b2lock = 1      # skip b2lock processing; we're doing ir1 cali
+                    else:
+                        b2lock = 0
+                    b2IRdistMean = -1
+                    b2IRhMean = 400
+                    zeroir2hangle = 400
+                    zeroir2hdist = 400
+
+                    # initialize timeout value for each beacon search
+                    hailmarryTimeout = time.time()
+                    
+                    while not b1lock or not b2lock:
+                        # init the data collection arrays for each collection series
+                        USr = np.array([], dtype=np.int32)
+                        cmpDeg = np.array([], dtype=np.int32)
+                        ir1r = np.array([], dtype=np.int32)
+                        ir1h = np.array([], dtype=np.int32)
+                        ir2r = np.array([], dtype=np.int32)
+                        ir2h = np.array([], dtype=np.int32)
+
+                        # take 25 samples
+                        tic = time.time()       # start the timer
+                        for j in range(25):
+                            usDistCmVal = us.distance_centimeters
+                            ir1DistVal = ir.distance(channel=1)
+                            ir2DistVal = ir.distance(channel=2)
+                            if ir1DistVal == None:
+                                ir1DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
+                            else:
+                                ir1DistVal = int((ir1DistCaliK * ir1DistVal) + ir1DistCaliOffset)
+                            ir1HeadVal = ir.heading(channel=1)
+                            if ir2DistVal == None:
+                                ir2DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
+                            else:
+                                ir2DistVal = int((ir2DistCaliK * ir2DistVal) + ir2DistCaliOffset)
+                            ir2HeadVal = ir.heading(channel=2)
+                            compassVal = cmp.value(0)
+                            USr = np.append(USr, usDistCmVal)
+                            cmpDeg = np.append(cmpDeg, compassVal)
+                            ir1r = np.append(ir1r, ir1DistVal)
+                            ir1h = np.append(ir1h, ir1HeadVal)
+                            ir2r = np.append(ir2r, ir2DistVal)
+                            ir2h = np.append(ir2h, ir2HeadVal)
+                            time.sleep(0.01)
+                        b1IRdistMean = np.mean(ir1r)
+                        b1IRdistStdev = np.std(ir1r)
+                        b1IRhMean = np.mean(ir1h)
+                        b1IRhStdev = np.std(ir1h)
+                        b2IRdistMean = np.mean(ir2r)
+                        b2IRdistStdev = np.std(ir2r)
+                        b2IRhMean = np.mean(ir2h)
+                        b2IRhStdev = np.std(ir2h)
+                        # show timer
+                        print("")
+                        print("time to take 25 samples, append np arrays, and gather stats:  ", time.time() - tic)
+                        print("")
+
+                        # show bxlock states
+                        if not b1lock:
+                            print("")
+                            print("time, b1lock state = ", time.time() - hailmarryTimeout, b1lock)
+                            print("b1IRdistMean, b1IRdistStdev = ", b1IRdistMean, b1IRdistStdev)
+                            print("b1IRhMean, b1IRhStdev = ", b1IRhMean, b1IRhStdev)
+                            print("compassVal = ", compassVal)
+                            print("")
+                            print("b2lock state = ", b2lock)
+                            print("")
+                        elif b1lock:
+                            print("")
+                            print("time, b2lock state = ", time.time() - hailmarryTimeout, b2lock)
+                            print("b2IRdistMean, b2IRdistStdev = ", b2IRdistMean, b2IRdistStdev)
+                            print("b2IRhMean, b2IRhStdev = ", b2IRhMean, b2IRhStdev)
+                            print("compassVal = ", compassVal)
+                            print("")
+                            print("b2lock state = ", b2lock)
+                            print("")
+
+
+                        ######################
+
+                        # if we don't have the beacon1 angle/distance yet, rotate to find those
+                        if not b1lock:
+                            if b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean < -20:
+                                # move ccw med slow
+                                mL.on(-3, brake=False)
+                                print("move ccw med slow; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
+                            elif b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean < 0:
+                                # move ccw slow
+                                mL.on(-1, brake=False)
+                                print("move ccw slow; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
+                            if b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean > 20:
+                                # move cw med slow
+                                mL.on(3, brake=False)
+                                print("move cw med slow; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
+                            elif b1IRdistMean > 0 and b1IRhStdev < 3 and b1IRhMean > 0:
+                                # move cw slow
+                                mL.on(1, brake=False)
+                                print("move cw slow; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
+
+                            # if we don't see a valid +25 or -25 heading, turn med fast until we do
+                            # note that an ir distance of -1 means we don't even see the beacon
+                            # note also that an ir distance > 300 is not trustworthy, so let's limit that
+                            if (b1IRdistMean > 300 or b1IRdistMean == -1) and b1IRhMean == 0:
+                                # move fast in cw direction until we pick up a beacon signal (or exceed search limit)
+                                mL.on(7, brake=False)
+                                print("move fast in cw direction; b1IRdistMean, b1IRhMean", b1IRdistMean, b1IRhMean)
+                            
+                            # stop when heading is between -0.7 and 0.7 AND ir distance is not -1
+                            # you should now have a good lock on beacon1, so grab the data
+                            if b1IRdistMean > 0 and b1IRdistMean < 300 and b1IRdistStdev < 3 and b1IRhMean >= -0.7 and b1IRhMean <= 0.7 and b1IRhStdev < 3:
+                                mL.on(0, brake=True)
+                                time.sleep(1)   ## let the shaking stop
+
+                                # init the data collection arrays for each collection series
+                                cmpDeg = np.array([], dtype=np.int32)
+                                ir1r = np.array([], dtype=np.int32)
+
+                                # take 25 samples
+                                for j in range(25):
+                                    usDistCmVal = us.distance_centimeters
+                                    ir1DistVal = ir.distance(channel=1)
+                                    if ir1DistVal == None:
+                                        ir1DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
+                                    else:
+                                        ir1DistVal = int((ir1DistCaliK * ir1DistVal) + ir1DistCaliOffset)
+                                    compassVal = cmp.value(0)
+                                    cmpDeg = np.append(cmpDeg, compassVal)
+                                    ir1r = np.append(ir1r, ir1DistVal)
+                                    time.sleep(0.01)
+                                    USr = np.append(USr, usDistCmVal)
+                                
+                                if beaconCali_mode == 1:
+                                    # grab these data points for Cali arrays
+                                    USmean = np.append(USmean, np.mean(USr))
+                                    ir1rmeanCali = np.append(ir1rmeanCali, np.mean(ir1r))
+                                
+                                # grab the beacon1 final output    
+                                zeroir1hangle = np.mean(cmpDeg)
+                                zeroir1hdist = np.mean(ir1r)
+                                print("zeroir1hangle = ", zeroir1hangle)
+                                print("zeroir1hdist = ", zeroir1hdist)
+                                print("")
+                                # set b1lock true (1)
+                                b1lock = 1
+                                hailmarryTimeout = time.time()    # reset Timeout to setup for beacon2 search
+                            
+                            if  (time.time() - 60) > hailmarryTimeout:
+                                mL.on(0, brake=True)
+                                print("Searching for beacon1 too long...")
+                                print("Proceeding with search for beacon2")
+                                print("")
+                                # set b1lock true (1)
+                                b1lock = 1
+                                # reset hailmarryTimeout to initial values
+                                hailmarryTimeout = time.time()
+
+                    
+                        ######################
+
+                        # if we DO have the beacon1 angle/distance, but not beacon2, rotate to find those
+                        if b1lock and not b2lock:
+                            if b2IRdistMean > 0 and b2IRhStdev < 3 and b2IRhMean < -20:
+                                # move ccw med slow
+                                mL.on(-3, brake=False)
+                                print("move ccw med slow; b2IRdistMean, b2IRhMean, b2IRhStdev", b2IRdistMean, b2IRhMean, b2IRhStdev)
+                            elif b2IRdistMean > 0 and b2IRhStdev < 3 and b2IRhMean < 0:
+                                # move ccw slow
+                                mL.on(-1, brake=False)
+                                print("move ccw slow; b2IRdistMean, b2IRhMean, b2IRhStdev", b2IRdistMean, b2IRhMean, b2IRhStdev)
+                            if b2IRdistMean > 0 and b2IRhStdev < 3 and b2IRhMean > 20:
+                                # move cw med slow
+                                mL.on(3, brake=False)
+                                print("move cw med slow; b2IRdistMean, b2IRhMean, b2IRhStdev", b2IRdistMean, b2IRhMean, b2IRhStdev)
+                            elif b2IRdistMean > 0 and b2IRhStdev < 3 and b2IRhMean > 0:
+                                # move cw slow
+                                mL.on(1, brake=False)
+                                print("move cw slow; b2IRdistMean, b2IRhMean, b2IRhStdev", b2IRdistMean, b2IRhMean, b2IRhStdev)
+
+                            # if we don't see a valid +25 or -25 heading, turn med fast until we do
+                            # note that an ir distance of -1 means we don't even see the beacon
+                            # note also that an ir distance > 300 is not trustworthy, so let's limit that
+                            if (b2IRdistMean > 300 or b2IRdistMean == -1) and b2IRhMean == 0:
+                                # move fast in cw direction until we pick up a beacon signal (or exceed search limit)
+                                mL.on(7, brake=False)
+                                print("move fast in cw direction; b2IRdistMean, b2IRhMean", b2IRdistMean, b2IRhMean)
+                            
+                            # stop when heading is between -0.7 and 0.7 AND ir distance is not -1
+                            # you should now have a good lock on beacon2, so grab the data
+                            if b2IRdistMean > 0 and b2IRdistMean < 300 and b2IRdistStdev < 3 and b2IRhMean >= -0.7 and b2IRhMean <= 0.7 and b2IRhStdev < 3:
+                                mL.on(0, brake=True)
+                                time.sleep(1)   ## let the shaking stop
+
+                                # init the data collection arrays for each collection series
+                                cmpDeg = np.array([], dtype=np.int32)
+                                ir2r = np.array([], dtype=np.int32)
+
+                                # take 25 samples
+                                for j in range(25):
+                                    usDistCmVal = us.distance_centimeters
+                                    ir2DistVal = ir.distance(channel=2)
+                                    if ir2DistVal == None:
+                                        ir2DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
+                                    else:
+                                        ir2DistVal = int((ir2DistCaliK * ir2DistVal) + ir2DistCaliOffset)
+                                    compassVal = cmp.value(0)
+                                    cmpDeg = np.append(cmpDeg, compassVal)
+                                    ir2r = np.append(ir2r, ir2DistVal)
+                                    time.sleep(0.01)
+                                    USr = np.append(USr, usDistCmVal)
+                                
+                                if beaconCali_mode == 2:
+                                    # grab these data points for Cali arrays
+                                    USmean = np.append(USmean, np.mean(USr))
+                                    ir2rmeanCali = np.append(ir2rmeanCali, np.mean(ir2r))
+                                
+                                # grab the beacon2 final output    
+                                zeroir2hangle = np.mean(cmpDeg)
+                                zeroir2hdist = np.mean(ir2r)
+                                print("zeroir2hangle = ", zeroir2hangle)
+                                print("zeroir2hdist = ", zeroir2hdist)
+                                print("")
+                                # set b2lock true (1)
+                                b2lock = 1
+                            
+                            if  (time.time() - 60) > hailmarryTimeout:
+                                mL.on(0, brake=True)
+                                print("Searching for beacon2 too long...")
+                                print("Concluding beacon search")
+                                print("")
+                                # set b2lock true (1)
+                                b2lock = 1
+                                # reset hailmarryTimeout to initial values
+                                hailmarryTimeout = time.time()    # probably not needed here
+                    
+                    ###################
+                    
+                    if beaconCali_mode == 0:
+                        print("")
+                        print("")
+                        print("zeroir1hangle = ", zeroir1hangle)
+                        print("zeroir1hdist = ", zeroir1hdist)
+                        print("")
+                        print("zeroir2hangle = ", zeroir2hangle)
+                        print("zeroir2hdist = ", zeroir2hdist)
+                        print("")
+                        print("")
+
+
+                    if beaconCali_mode == 1 or beaconCali_mode == 2:
+                        if np.mean(USr) > 20:
+                            while usDistCmVal > (250 - (i * 10)) and usDistCmVal > 15:
+                                usDistCmVal = us.distance_centimeters
+                                # move forward slow
+                                ### ??? use PID controller to lock heading on beacon while moving forward
+                                mL.on(4, brake=False)
+                                mR.on(4, brake=False)
+                                time.sleep(0.1)
+                            mL.on(0, brake=False)
+                            mR.on(0, brake=False)
+                    
+                            # testing
+                            print("")
+                            print("i = ", i)
+                            print("USmean: ", USmean)
+                            print("ir1rmeanCali: ", ir1rmeanCali)
+                            print("ir2rmeanCali: ", ir2rmeanCali)
+                
+                # obtain slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+                # save results to vars for each IR channel (i.e. different beacons)
+                if beaconCali_mode == 1:
+                    ir1DistCaliK, ir1DistCaliOffset, r_value, p_value, std_err = stats.linregress(USmean, ir1rmeanCali)
+                    print("")
+                    print("ir1DistCaliK = ", ir1DistCaliK)
+                    print("ir1DistCaliOffset = ", ir1DistCaliOffset)
+                    print("r_value: ", r_value)
+                    print("p_value: ", p_value)
+                    print("std_err: ", std_err)
+                    print("")
+                
+                if beaconCali_mode == 2:
+                    ir2DistCaliK, ir2DistCaliOffset, r_value, p_value, std_err = stats.linregress(USmean, ir2rmeanCali)
+                    print("")
+                    print("ir2DistCaliK = ", ir2DistCaliK)
+                    print("ir2DistCaliOffset = ", ir2DistCaliOffset)
+                    print("r_value: ", r_value)
+                    print("p_value: ", p_value)
+                    print("std_err: ", std_err)
+                    print("")
+
+                # save results to vars for each IR channel (i.e. different beacons)
+                # beaconCali_mode = 0
+                # ir1DistCaliK = 1
+                # ir1DistCaliOffset = 0
+                # ir2DistCaliK = 1
+                # ir2DistCaliOffset = 0
+                # print results to screen
+                
             #### temp add for intermediate beacon angle/distance testing
             except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
                 mL.on(0, brake=False)
@@ -741,12 +887,12 @@ if __name__ == "__main__":
             #             if ir1DistVal == None:
             #                 ir1DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
             #             else:
-            #                 ir1DistVal = int(3.19 * ir1DistVal)
+            #                 ir1DistVal = int((ir1DistCaliK * ir1DistVal) + ir1DistCaliOffset)
             #             ir1HeadVal = ir.heading(channel=1)
             #             if ir2DistVal == None:
             #                 ir2DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
             #             else:
-            #                 ir2DistVal = int(3.19 * ir2DistVal)
+            #                 ir2DistVal = int((ir2DistCaliK * ir2DistVal) + ir2DistCaliOffset)
             #             ir2HeadVal = ir.heading(channel=2)
             #             compassVal = cmp.value(0)
             #             USr = np.append(USr, usDistCmVal)
