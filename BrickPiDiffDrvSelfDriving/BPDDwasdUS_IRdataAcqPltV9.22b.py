@@ -14,10 +14,11 @@
 #                           - added collection/computation of standard deviations (IR distance and heading)
 #                           - replaced hailmarry compass with hailmarry timeout
 #                           - tuned some thresholds and tweaked some settings
-#                           - still seeing some strange heading values when beacon is to far left or right,
+#                           - still seeing some strange heading values when beacon is too far left or right,
 #                             esp when the beacon is slightly behind - and a short distance from - the IR sensor
 #                           - I noticed I was missing the statement ir.mode = 'IR-SEEK' so I added that (9/19/2020)
 #                           - added self-calibration routines for IR sensors
+#                           - corrected my implementation stats.linregress (I had effectively reversed x and y)
 
 #                           - DON'T Forget to start xming and export DISPLAY=10.0.0.9:0.0  (change IP addr as req'd)
 
@@ -812,7 +813,7 @@ if __name__ == "__main__":
                 # obtain slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
                 # save results to vars for each IR channel (i.e. different beacons)
                 if beaconCali_mode == 1:
-                    ir1DistCaliK, ir1DistCaliOffset, r_value, p_value, std_err = stats.linregress(USmean, ir1rmeanCali)
+                    ir1DistCaliK, ir1DistCaliOffset, r_value, p_value, std_err = stats.linregress(ir1rmeanCali, USmean)
                     print("")
                     print("ir1DistCaliK = ", ir1DistCaliK)
                     print("ir1DistCaliOffset = ", ir1DistCaliOffset)
@@ -822,7 +823,7 @@ if __name__ == "__main__":
                     print("")
                 
                 if beaconCali_mode == 2:
-                    ir2DistCaliK, ir2DistCaliOffset, r_value, p_value, std_err = stats.linregress(USmean, ir2rmeanCali)
+                    ir2DistCaliK, ir2DistCaliOffset, r_value, p_value, std_err = stats.linregress(ir2rmeanCali, USmean)
                     print("")
                     print("ir2DistCaliK = ", ir2DistCaliK)
                     print("ir2DistCaliOffset = ", ir2DistCaliOffset)
