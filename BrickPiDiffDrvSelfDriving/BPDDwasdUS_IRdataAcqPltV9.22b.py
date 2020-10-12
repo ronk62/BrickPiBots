@@ -173,10 +173,10 @@ ir2hstd = np.array([], dtype=np.int32)    # array to hold processed data ir2 hea
 
 # IR calibration vars
 beaconCali_mode = 0
-ir1DistCaliK = 1
-ir1DistCaliOffset = 0
-ir2DistCaliK = 1
-ir2DistCaliOffset = 0
+ir1DistCaliK = 3.2373925234111067
+ir1DistCaliOffset = 2.9145308391561286
+ir2DistCaliK = 3.2099057918114617
+ir2DistCaliOffset = -4.590962433759358
 
 
 
@@ -464,6 +464,8 @@ if __name__ == "__main__":
             else:
                 sample_mode = 1
                 beaconCali_mode = 1
+                ir1DistCaliK = 1
+                ir1DistCaliOffset = 0
                 print("")
                 print("sample_mode now set to...  ", sample_mode)
                 print("and beaconCali_mode now set to ...  ", beaconCali_mode)
@@ -481,6 +483,8 @@ if __name__ == "__main__":
             else:
                 sample_mode = 1
                 beaconCali_mode = 2
+                ir2DistCaliK = 1
+                ir2DistCaliOffset = 0
                 print("")
                 print("sample_mode now set to...  ", sample_mode)
                 print("and beaconCali_mode now set to ...  ", beaconCali_mode)
