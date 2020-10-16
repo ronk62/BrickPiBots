@@ -452,7 +452,7 @@ if __name__ == "__main__":
             plt.show()
 
 
-        if x == 49: # 1 pushed - self-calibration routine for IR1 sensor
+        if x == 49: # 1 pushed - self-calibration routine for IR1 channel/beacon
             ir1DistVal = ir.distance(channel=1)
             if ir1DistVal == None:
                 x == 0
@@ -471,7 +471,7 @@ if __name__ == "__main__":
                 print("and beaconCali_mode now set to ...  ", beaconCali_mode)
                 print("")
 
-        if x == 50: # 2 pushed - self-calibration routine for IR2 sensor
+        if x == 50: # 2 pushed - self-calibration routine for IR2 channel/beacon
             ir2DistVal = ir.distance(channel=2)
             if ir2DistVal == None:
                 x == 0
@@ -502,6 +502,75 @@ if __name__ == "__main__":
 
         if sample_mode > 0:
             try:
+                if beaconCali_mode = 0:
+                    # setup for US data capture
+                    # rototate to initial cmp angle 350 +/- 2
+                    compassVal = cmp.value(0)
+                    while compassVal < 348 or compassVal > 352:
+                        if compassVal >= 125:
+                            # rotate cw
+                            mL.on(7, brake=False)
+                        if compassVal < 125 or compassVal > 352:
+                            # rotate ccw
+                            mL.on(-7, brake=False)
+                    mL.on(0, brake=True)
+                    time.sleep(0.5)
+
+                    # rotate to angle i; stop and take US data samples
+                    for i in range(360,6):
+                        ## move motor to new cmps angle
+                        while compassVal < i - 1 or compassVal > i + 1:
+                            compassVal = cmp.value(0)
+                            #print("compasVal = ", compassVal)
+                            mL.on(3, brake=False)
+                        mL.on(0, brake=True)
+                        ###time.sleep(1)   # pause to let the shaking stop before collecting data
+                        # init the data collection arrays for each angle/collection series
+                        USr = np.array([], dtype=np.int32)
+                        cmpDeg = np.array([], dtype=np.int32)
+                        
+                        # take 100 samples
+                        for j in range(100):
+                            usDistCmVal = us.distance_centimeters
+                            compassVal = cmp.value(0)
+                            USr = np.append(USr, usDistCmVal)
+                            cmpDeg = np.append(cmpDeg, compassVal)
+                            
+                        print("")
+                        print ("USr.size = ", USr.size)
+                        print("min      max      mean      std")
+                        print(np.min(USr), np.max(USr), np.mean(USr), np.std(USr))
+                        print("")
+                        print ("cmpDeg.size = ", cmpDeg.size)
+                        print("min      max      mean      std")
+                        print(np.min(cmpDeg), np.max(cmpDeg), np.mean(cmpDeg), np.std(cmpDeg))
+                        print("")
+                        print("")
+                        
+                        USmean = np.append(USmean, np.mean(USr))
+                        USstd = np.append(USstd, np.std(USr))
+                        cmpMean = np.append(cmpMean, np.mean(cmpDeg))
+
+                        if USmean.size > 100000:
+                            sample_mode = -1
+                            print("")
+                            print("")
+                            print ("Exiting sample mode due to sample size too large...")
+                            print ("USmean.size = ", USmean.size)
+                            print("")
+                
+            # except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
+            #     mL.on(0, brake=False)
+            #     mR.on(0, brake=False)
+            #     sample_mode = -1
+
+            # sample_mode = -1
+            # print("Sampling complete. Returning to keyboard cmd mode.")
+
+                ###############################
+                ###############################
+                ###############################
+
                 # reset/initialize additional beacon cali arrays
                 USmean = np.array([], dtype=np.int32)
                 ir1rmeanCali = np.array([], dtype=np.int32)
@@ -836,13 +905,6 @@ if __name__ == "__main__":
                     print("std_err: ", std_err)
                     print("")
 
-                # save results to vars for each IR channel (i.e. different beacons)
-                # beaconCali_mode = 0
-                # ir1DistCaliK = 1
-                # ir1DistCaliOffset = 0
-                # ir2DistCaliK = 1
-                # ir2DistCaliOffset = 0
-                # print results to screen
                 
             #### temp add for intermediate beacon angle/distance testing
             except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
@@ -857,109 +919,6 @@ if __name__ == "__main__":
                 ######################
                 ######################
 
-
-            #     # setup for US data capture
-            #     # rototate to initial cmp angle 350 +/- 2
-            #     compassVal = cmp.value(0)
-            #     while compassVal < 348 or compassVal > 352:
-            #         if compassVal >= 125:
-            #             # rotate cw
-            #             mL.on(1, brake=False)
-            #         if compassVal < 125 or compassVal > 352:
-            #             # rotate ccw
-            #             mL.on(-1, brake=False)
-            #     mL.on(0, brake=True)
-            #     time.sleep(0.5)
-
-            #     # take US data samples while rotating cw
-            #     for i in range(360):
-            #         ## move motor to new cmps angle
-            #         while compassVal < i - 1 or compassVal > i + 1:
-            #             compassVal = cmp.value(0)
-            #             #print("compasVal = ", compassVal)
-            #             mL.on(1, brake=False)
-            #         mL.on(0, brake=True)
-            #         ###time.sleep(1)   # pause to let the shaking stop before collecting data
-            #         # init the data collection arrays for each angle/collection series
-            #         USr = np.array([], dtype=np.int32)
-            #         cmpDeg = np.array([], dtype=np.int32)
-                    
-            #         # take 100 samples
-            #         for j in range(100):
-            #             usDistCmVal = us.distance_centimeters
-            #             ir1DistVal = ir.distance(channel=1)
-            #             ir2DistVal = ir.distance(channel=2)
-            #             if ir1DistVal == None:
-            #                 ir1DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
-            #             else:
-            #                 ir1DistVal = int((ir1DistCaliK * ir1DistVal) + ir1DistCaliOffset)
-            #             ir1HeadVal = ir.heading(channel=1)
-            #             if ir2DistVal == None:
-            #                 ir2DistVal = -1  ### set to -1 instead of None or numpy.savetxt and other Ops will complain
-            #             else:
-            #                 ir2DistVal = int((ir2DistCaliK * ir2DistVal) + ir2DistCaliOffset)
-            #             ir2HeadVal = ir.heading(channel=2)
-            #             compassVal = cmp.value(0)
-            #             USr = np.append(USr, usDistCmVal)
-            #             cmpDeg = np.append(cmpDeg, compassVal)
-            #             ir1r = np.append(ir1r, ir1DistVal)
-            #             ir1h = np.append(ir1h, ir1HeadVal)
-            #             ir2r = np.append(ir2r, ir2DistVal)
-            #             ir2h = np.append(ir2h, ir2HeadVal)
-                        
-            #         print("")
-            #         print ("USr.size = ", USr.size)
-            #         print("min      max      mean      std")
-            #         print(np.min(USr), np.max(USr), np.mean(USr), np.std(USr))
-            #         print("")
-            #         print ("cmpDeg.size = ", cmpDeg.size)
-            #         print("min      max      mean      std")
-            #         print(np.min(cmpDeg), np.max(cmpDeg), np.mean(cmpDeg), np.std(cmpDeg))
-            #         print("")
-            #         print ("ir1r.size = ", ir1r.size)
-            #         print("min      max      mean      std")
-            #         print(np.min(ir1r), np.max(ir1r), np.mean(ir1r), np.std(ir1r))
-            #         print("")
-            #         print ("ir1h.size = ", ir1h.size)
-            #         print("min      max      mean      std")
-            #         print(np.min(ir1h), np.max(ir1h), np.mean(ir1h), np.std(ir1h))
-            #         print("")
-            #         print ("ir2r.size = ", ir2r.size)
-            #         print("min      max      mean      std")
-            #         print(np.min(ir2r), np.max(ir2r), np.mean(ir2r), np.std(ir2r))
-            #         print("")
-            #         print ("ir2h.size = ", ir2h.size)
-            #         print("min      max      mean      std")
-            #         print(np.min(ir2h), np.max(ir2h), np.mean(ir2h), np.std(ir2h))
-            #         print("")
-                    
-            #         USmean = np.append(USmean, np.mean(USr))
-            #         USstd = np.append(USstd, np.std(USr))
-            #         cmpMean = np.append(cmpMean, np.mean(cmpDeg))
-            #         ir1rmean = np.append(ir1rmean, np.mean(ir1r))
-            #         ir1rstd = np.append(ir1rstd, np.std(ir1r))
-            #         ir1hmean = np.append(ir1hmean, np.mean(ir1h))
-            #         ir1hstd = np.append(ir1hstd, np.std(ir1h))
-            #         ir2rmean = np.append(ir2rmean, np.mean(ir2r))
-            #         ir2rstd = np.append(ir2rstd, np.std(ir2r))
-            #         ir2hmean = np.append(ir2hmean, np.mean(ir2h))
-            #         ir2hstd = np.append(ir2hstd, np.std(ir2h))
-
-            #         if USmean.size > 100000:
-            #             sample_mode = -1
-            #             print("")
-            #             print("")
-            #             print ("Exiting sample mode due to sample size too large...")
-            #             print ("USmean.size = ", USmean.size)
-            #             print("")
-                
-            # except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
-            #     mL.on(0, brake=False)
-            #     mR.on(0, brake=False)
-            #     sample_mode = -1
-
-            # sample_mode = -1
-            # print("Sampling complete. Returning to keyboard cmd mode.")
                
 
         # calculate motor speeds for turning right
