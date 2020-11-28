@@ -502,12 +502,12 @@ if __name__ == "__main__":
 
         if sample_mode > 0:
             try:
-                if beaconCali_mode = 0:
+                if beaconCali_mode == 0:
                     # setup for US data capture
                     # rototate to initial cmp angle 350 +/- 2
-                    compassVal = cmp.value(0)
                     while compassVal < 348 or compassVal > 352:
-                        if compassVal >= 125:
+                        compassVal = cmp.value(0)
+                        if compassVal >= 125 and compassVal < 352:
                             # rotate cw
                             mL.on(7, brake=False)
                         if compassVal < 125 or compassVal > 352:
@@ -517,7 +517,7 @@ if __name__ == "__main__":
                     time.sleep(0.5)
 
                     # rotate to angle i; stop and take US data samples
-                    for i in range(360,6):
+                    for i in range(6,360,6):
                         ## move motor to new cmps angle
                         while compassVal < i - 1 or compassVal > i + 1:
                             compassVal = cmp.value(0)
@@ -569,14 +569,13 @@ if __name__ == "__main__":
 
                 ###############################
                 ###############################
-                ###############################
-
-                # reset/initialize additional beacon cali arrays
-                USmean = np.array([], dtype=np.int32)
-                ir1rmeanCali = np.array([], dtype=np.int32)
-                ir2rmeanCali = np.array([], dtype=np.int32)
+                ###############################                
 
                 if beaconCali_mode == 1 or beaconCali_mode == 2:
+                    # reset/initialize additional beacon cali arrays
+                    USmean = np.array([], dtype=np.int32)
+                    ir1rmeanCali = np.array([], dtype=np.int32)
+                    ir2rmeanCali = np.array([], dtype=np.int32)
                     # calibrate IR distance senors using US dist as ref
                     print("")
                     print("Make sure robot is facing a flat wall or surface with no interference with US")
