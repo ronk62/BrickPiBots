@@ -16,9 +16,16 @@
 #                           - tuned some thresholds and tweaked some settings
 #                           - still seeing some strange heading values when beacon is too far left or right,
 #                             esp when the beacon is slightly behind - and a short distance from - the IR sensor
+#                               ---> to address the heading value problem above, I added a vertical separator in front
+#                               of the IR sensor to block unwanted peripheral IR beacon signals; this seems to have
+#                               helped significantly
 #                           - I noticed I was missing the statement ir.mode = 'IR-SEEK' so I added that (9/19/2020)
 #                           - added self-calibration routines for IR sensors
 #                           - corrected my implementation stats.linregress (I had effectively reversed x and y)
+#                           - removed sections of code related to data array storage and retrieval (save/load csv files)
+#                             as well as printing arrays to the screen
+#                           - added the calculations to transform robot and beacon postions to world-frame values
+#                           - heavily revised the plotting/graphing section to show robot and world frame position data
 
 #                           - DON'T Forget to start xming and export DISPLAY=10.0.0.9:0.0  (change IP addr as req'd)
 
@@ -153,7 +160,9 @@ cmpDeg = np.array([], dtype=np.int32)    # array to hold 'thetaDeg' - compass-an
 USmean = np.array([], dtype=np.int32)    # array to hold processed data US-mean
 USstd = np.array([], dtype=np.int32)     # array to hold processed data US-stdev
 cmpMean = np.array([], dtype=np.int32)   # array to hold processed data cmps-mean
-ODt = np.array([], dtype=np.int32)                  # array to index each time/tick (x axis independant var)
+ODt = np.array([], dtype=np.int32)       # array to index each time/tick (x axis independant var)
+rot_zeroir1hangle = 400                  # rotated for std cartesian graph and converted to radians
+rot_zeroir2hangle = 400                  # rotated for std cartesian graph and converted to radians
 
 # added IR1
 ir1r = np.array([], dtype=np.int32)       # array to hold 'r' - ir1 distance r (in approx cm)
@@ -288,125 +297,6 @@ if __name__ == "__main__":
             printVerbose *= -1
             print("toggled printVerbose mode (v)")
 
-        if x == 112: # p pushed - print sample statistics to screen
-            if USmean.size < 1 or USstd.size < 1 or ir1rmean.size < 1 or ir1rstd.size < 1 or cmpMean.size < 1:
-                print("no data at this time")
-            else:
-                print ("USmean.size = ", USmean.size)
-                print("")
-                print ("USmean = ", USmean)
-                print("")
-                print ("USstd.size = ", USstd.size)
-                print("")
-                print ("USstd = ", USstd)
-                print("")
-                print ("ir1rmean.size = ", ir1rmean.size)
-                print("")
-                print ("ir1rmean = ", ir1rmean)
-                print("")
-                print ("ir1rstd.size = ", ir1rstd.size)
-                print("")
-                print ("ir1rstd = ", ir1rstd)
-                print("")
-                print ("ir1hmean.size = ", ir1hmean.size)
-                print("")
-                print ("ir1hmean = ", ir1hmean)
-                print("")
-                print ("ir1hstd.size = ", ir1hstd.size)
-                print("")
-                print ("ir1hstd = ", ir1hstd)
-                print("")
-                print ("ir2rmean.size = ", ir2rmean.size)
-                print("")
-                print ("ir2rmean = ", ir2rmean)
-                print("")
-                print ("ir2rstd.size = ", ir2rstd.size)
-                print("")
-                print ("ir2rstd = ", ir2rstd)
-                print("")
-                print ("ir2hmean.size = ", ir2hmean.size)
-                print("")
-                print ("ir2hmean = ", ir2hmean)
-                print("")
-                print ("ir2hstd.size = ", ir2hstd.size)
-                print("")
-                print ("ir2hstd = ", ir2hstd)
-                print("")
-                print ("cmpMean.size = ", cmpMean.size)
-                print("")
-                print ("cmpMean = ", cmpMean)
-                print("")
-
-        if x == 102: # f pushed - save sample statistics to file
-            print("")
-            if USmean.size < 1 or USstd.size < 1 or ir1rmean.size < 1 or ir1rstd.size < 1 or cmpMean.size < 1:
-                print("no data at this time")
-            else:
-                print ("saving sample data to csv files")
-                # save to csv files
-                np.savetxt('USmean-V922b-1.csv', USmean, delimiter=',')
-                np.savetxt('USstd-V922b-1.csv', USstd, delimiter=',')
-                np.savetxt('ir1rmean-V922b-1.csv', ir1rmean, delimiter=',')
-                np.savetxt('ir1rstd-V922b-1.csv', ir1rstd, delimiter=',')
-                np.savetxt('ir1hmean-V922b-1.csv', ir1hmean, delimiter=',')
-                np.savetxt('ir1hstd-V922b-1.csv', ir1hstd, delimiter=',')
-                np.savetxt('ir2rmean-V922b-1.csv', ir2rmean, delimiter=',')
-                np.savetxt('ir2rstd-V922b-1.csv', ir2rstd, delimiter=',')
-                np.savetxt('ir2hmean-V922b-1.csv', ir2hmean, delimiter=',')
-                np.savetxt('ir2hstd-V922b-1.csv', ir2hstd, delimiter=',')
-                np.savetxt('cmpMean-V922b-1.csv', cmpMean, delimiter=',')
-                print ("saves commplete")
-                print("")
-
-        if x == 108: # l pushed - loading sample data from csv files
-            print("")
-            print ("loading sample data from csv files")
-            # load from csv files
-            USmean = np.loadtxt('/home/robot/ev3dev2Projects/USmean-V922b-1.csv', delimiter=',')
-            USstd = np.loadtxt('/home/robot/ev3dev2Projects/USstd-V922b-1.csv', delimiter=',')
-            ir1rmean = np.loadtxt('/home/robot/ev3dev2Projects/ir1rmean-V922b-1.csv', delimiter=',')
-            ir1rstd = np.loadtxt('/home/robot/ev3dev2Projects/ir1rstd-V922b-1.csv', delimiter=',')
-            ir1hmean = np.loadtxt('/home/robot/ev3dev2Projects/ir1hmean-V922b-1.csv', delimiter=',')
-            ir1hstd = np.loadtxt('/home/robot/ev3dev2Projects/ir1hstd-V922b-1.csv', delimiter=',')            
-            ir2rmean = np.loadtxt('/home/robot/ev3dev2Projects/ir2rmean-V922b-1.csv', delimiter=',')
-            ir2rstd = np.loadtxt('/home/robot/ev3dev2Projects/ir2rstd-V922b-1.csv', delimiter=',')
-            ir2hmean = np.loadtxt('/home/robot/ev3dev2Projects/ir2hmean-V922b-1.csv', delimiter=',')
-            ir2hstd = np.loadtxt('/home/robot/ev3dev2Projects/ir2hstd-V922b-1.csv', delimiter=',')            
-            cmpMean = np.loadtxt('/home/robot/ev3dev2Projects/cmpMean-V922b-1.csv', delimiter=',')
-            print ("loads commplete")
-            print("")
-                        
-            # calculating additional values
-            print("creating ODt for use as x axis values for plotting/graphing...")
-            print("")
-            for i in range(0,len(USmean)):
-                ODt = np.append(ODt, i)
-                #print("i = ", i)
-            #print("ODt = ", ODt)
-            print("")
-            print("values have been created")
-            print("")
-
-
-        if x == 114: # r pushed - reinitializing arrays
-            USr = np.array([], dtype=np.int32)
-            cmpDeg = np.array([], dtype=np.int32)
-            USmean = np.array([], dtype=np.int32)
-            USstd = np.array([], dtype=np.int32)
-            cmpMean = np.array([], dtype=np.int32)
-            ir1r = np.array([], dtype=np.int32)
-            ir1rmean = np.array([], dtype=np.int32)
-            ir1rstd = np.array([], dtype=np.int32)
-            ir1h = np.array([], dtype=np.int32)
-            ir1hmean = np.array([], dtype=np.int32)
-            ir1hstd = np.array([], dtype=np.int32)
-            ir2r = np.array([], dtype=np.int32)
-            ir2rmean = np.array([], dtype=np.int32)
-            ir2rstd = np.array([], dtype=np.int32)
-            ir2h = np.array([], dtype=np.int32)
-            ir2hmean = np.array([], dtype=np.int32)
-            ir2hstd = np.array([], dtype=np.int32)
-            print("r pushed - reinitialized * arrays")
 
 
         if x == 103: # g pushed - graph the data
@@ -910,6 +800,162 @@ if __name__ == "__main__":
                 mL.on(0, brake=False)
                 mR.on(0, brake=False)
                 sample_mode = -1
+
+            ######################################################
+            #### Added world frame plotting/graphing code here ###
+            ######################################################
+
+            # rotate zeroir1hangle and zeroir2hangle 90 deg from compass to std graph
+            # orientation and convert angles from degrees to rads
+            rot_zeroir1hangle = radians((415 - zeroir1hangle) % 360)
+            rot_zeroir2hangle = radians((415 - zeroir2hangle) % 360)
+            print("zero ir h angle rotated 90 deg...")
+            print("rot_zeroir1hangle = ", rot_zeroir1hangle)
+            print("rot_zeroir2hangle = ", rot_zeroir2hangle)
+            print("")
+
+
+            ## calculate relative location (robot position is the origin)
+            ir1x = zeroir1hdist * cos(rot_zeroir1hangle)
+            ir1y = zeroir1hdist * sin(rot_zeroir1hangle)
+
+            ir2x = zeroir2hdist * cos(rot_zeroir2hangle)
+            ir2y = zeroir2hdist * sin(rot_zeroir2hangle)
+
+            print("ir1x, ir1y (beacon1) = ", ir1x, ir1y)
+            print("ir2x, ir2y (beacon2) = ", ir2x, ir2y)
+            print("")
+            print("")
+
+
+            ## graph the relative position data
+            plt.figure(1)
+
+            plt.scatter(0,0, label='robot location', color='r', s=25, marker="o")
+            plt.scatter(ir1x,ir1y, label='beacon1 location', color='k', s=25, marker="o")
+            plt.scatter(ir2x,ir2y, label='beacon2 location', color='c', s=25, marker="o")
+            plt.axis('equal')
+            plt.xlabel('x-position')
+            plt.ylabel('y-position')
+            plt.title('IR beacons - robot frame relative position data V902b')
+            plt.legend()
+            # plt.show()
+
+
+            ## convert from robot frame coords to world frame
+            # beacon1 world frame coords
+            wir1x = 114
+            wir1y = 0
+
+            # beacon2 world frame coords
+            wir2x = 0
+            wir2y = 381
+
+
+            # robot world frame coords using beacon1 ref
+            wBOTx1 = wir1x - ir1x
+            wBOTy1 = wir1y - ir1y
+
+            # robot world frame coords using beacon2 ref
+            wBOTx2 = wir2x - ir2x
+            wBOTy2 = wir2y - ir2y
+
+            print("wir1x, wir1y (beacon1 world frame location) = ", wir1x, wir1y)
+            print("wir2x, wir2y (beacon2 world frame location) = ", wir2x, wir2y)
+            print("")
+            print("wBOTx1, wBOTy1 (robot world frame location, beacon1 ref) = ", wBOTx1, wBOTy1)
+            print("wBOTx2, wBOTy2 (robot world frame location, beacon2 ref) = ", wBOTx2, wBOTy2)
+            print("")
+            print("")
+
+
+            ## world frame "room" configuration space (simple rectangle)
+
+            # define the bounding box of the rectangular space - lower left (origin) = swCorner
+            swCornerx = 0
+            swCornery = 0
+
+            neCornerx = 114
+            neCornery = 381
+
+            # North and South Wall boundaries
+            southWallx = np.array([], dtype=np.int32)
+            southWally = np.array([], dtype=np.int32)
+            northWallx = np.array([], dtype=np.int32)
+            northWally = np.array([], dtype=np.int32)
+            for i in range(neCornerx + 1):
+                southWallx = np.append(southWallx, i)
+                southWally = np.append(southWally, swCornery)
+                northWallx = np.append(northWallx, i)
+                northWally = np.append(northWally, neCornery)
+
+            # East and West Wall boundaries
+            westWallx = np.array([], dtype=np.int32)
+            westWally = np.array([], dtype=np.int32)
+            eastWallx = np.array([], dtype=np.int32)
+            eastWally = np.array([], dtype=np.int32)
+            for i in range(neCornery + 1):
+                westWallx = np.append(westWallx, swCornerx)
+                westWally = np.append(westWally, i)
+                eastWallx = np.append(eastWallx, neCornerx)
+                eastWally = np.append(eastWally, i)
+            
+            # process the raw US and compass polar coord data into point cloud data
+            USx = []
+            USy = []
+            for i in range(len(cmpMean)):
+                # compass to std graph frame version
+                thetaRad = radians((415 - cmpMean[i]) % 360)
+                radius = USmean[i]
+                # make the next few lines a result of wBOTx1/y1 and x2/y2 avg or best choice 
+                newx = (radius * cos(thetaRad)) + wBOTx1
+                #newx = (radius * cos(thetaRad)) + wBOTx2
+                # print("newx = ", newx)
+                newy =  (radius * sin(thetaRad)) + wBOTy1
+                #newy =  (radius * sin(thetaRad)) + wBOTy2
+                # print("newy = ", newy)
+                # for testing
+                # # cartesianCoords.append([i,i+1])
+                USx.append([newx])
+                USy.append([newy])
+
+
+            ## graph the US point cloud data
+            plt.figure(3)
+
+            plt.scatter(USx,USy, label='US point cloud', color='r', s=25, marker="o")
+            # plt.scatter(ir1x,ir1y, label='beacon1 location', color='k', s=25, marker="o")
+            # plt.scatter(ir2x,ir2y, label='beacon2 location', color='c', s=25, marker="o")
+            plt.axis('equal')
+            plt.xlabel('x-position')
+            plt.ylabel('y-position')
+            plt.title('US & compass point cloud data V902b')
+            plt.legend()
+            # plt.show()
+
+
+            ## graph the world frame "room" and position data
+            plt.figure(2)
+
+            plt.scatter(southWallx, southWally, label='southWall', color='y', s=10, marker=".")
+            plt.scatter(northWallx, northWally, label='northWall', color='y', s=10, marker=".")
+            plt.scatter(westWallx, westWally, label='westWall', color='y', s=10, marker=".")
+            plt.scatter(eastWallx, eastWally, label='eastWall', color='y', s=10, marker=".")
+
+            plt.scatter(USx, USy, label='US point cloud', color='r', s=25, marker="o")
+
+            plt.scatter(wBOTx1, wBOTy1, label='robot location b1 ref', color='b', s=25, marker="o")
+            plt.scatter(wBOTx2, wBOTy2, label='robot location b2 ref', color='m', s=25, marker="o")
+            plt.scatter(wir1x,wir1y, label='beacon1 location', color='k', s=25, marker="o")
+            plt.scatter(wir2x,wir2y, label='beacon2 location', color='c', s=25, marker="o")
+            plt.axis('equal')
+            plt.xlabel('x-position')
+            plt.ylabel('y-position')
+            plt.title('IR beacons - world frame position data V902b')
+            plt.legend()
+            plt.show()
+
+
 
             sample_mode = -1
             print("Sampling complete. Returning to keyboard cmd mode.")
