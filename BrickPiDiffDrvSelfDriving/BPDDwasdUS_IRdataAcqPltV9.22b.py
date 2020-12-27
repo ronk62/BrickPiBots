@@ -504,6 +504,7 @@ if __name__ == "__main__":
                     b1IRhMean = 400
                     zeroir1hangle = 400
                     zeroir1hdist = 400
+                    zeroir1hdistStdev = 400
                     if beaconCali_mode == 1:
                         b2lock = 1      # skip b2lock processing; we're doing ir1 cali
                     else:
@@ -512,6 +513,7 @@ if __name__ == "__main__":
                     b2IRhMean = 400
                     zeroir2hangle = 400
                     zeroir2hdist = 400
+                    zeroir2hdistStdev = 400
 
                     # initialize timeout value for each beacon search
                     hailmarryTimeout = time.time()
@@ -644,8 +646,10 @@ if __name__ == "__main__":
                                 # grab the beacon1 final output    
                                 zeroir1hangle = np.mean(cmpDeg)
                                 zeroir1hdist = np.mean(ir1r)
+                                zeroir1hdistStdev = np.std(ir1r)
                                 print("zeroir1hangle = ", zeroir1hangle)
                                 print("zeroir1hdist = ", zeroir1hdist)
+                                print("zeroir1hdistStdev = ", zeroir1hdistStdev)
                                 print("")
                                 # set b1lock true (1)
                                 b1lock = 1
@@ -723,8 +727,10 @@ if __name__ == "__main__":
                                 # grab the beacon2 final output    
                                 zeroir2hangle = np.mean(cmpDeg)
                                 zeroir2hdist = np.mean(ir2r)
+                                zeroir2hdistStdev = np.std(ir2r)
                                 print("zeroir2hangle = ", zeroir2hangle)
                                 print("zeroir2hdist = ", zeroir2hdist)
+                                print("zeroir2hdistStdev = ", zeroir2hdistStdev)
                                 print("")
                                 # set b2lock true (1)
                                 b2lock = 1
@@ -746,9 +752,11 @@ if __name__ == "__main__":
                         print("")
                         print("zeroir1hangle = ", zeroir1hangle)
                         print("zeroir1hdist = ", zeroir1hdist)
+                        print("zeroir1hdistStdev = ", zeroir1hdistStdev)
                         print("")
                         print("zeroir2hangle = ", zeroir2hangle)
                         print("zeroir2hdist = ", zeroir2hdist)
+                        print("zeroir2hdistStdev = ", zeroir2hdistStdev)
                         print("")
                         print("")
 
@@ -901,31 +909,43 @@ if __name__ == "__main__":
                 eastWally = np.append(eastWally, i)
             
             # process the raw US and compass polar coord data into point cloud data
-            USx = []
-            USy = []
+            # use beacon1 as world frame ref
+            USx1 = []
+            USy1 = []
             for i in range(len(cmpMean)):
                 # compass to std graph frame version
                 thetaRad = radians((415 - cmpMean[i]) % 360)
                 radius = USmean[i]
-                # make the next few lines a result of wBOTx1/y1 and x2/y2 avg or best choice 
                 newx = (radius * cos(thetaRad)) + wBOTx1
-                #newx = (radius * cos(thetaRad)) + wBOTx2
                 # print("newx = ", newx)
                 newy =  (radius * sin(thetaRad)) + wBOTy1
-                #newy =  (radius * sin(thetaRad)) + wBOTy2
                 # print("newy = ", newy)
                 # for testing
                 # # cartesianCoords.append([i,i+1])
-                USx.append([newx])
-                USy.append([newy])
+                USx1.append([newx])
+                USy1.append([newy])
 
+            # process the raw US and compass polar coord data into point cloud data
+            # use beacon2 as world frame ref
+            USx2 = []
+            USy2 = []
+            for i in range(len(cmpMean)):
+                # compass to std graph frame version
+                thetaRad = radians((415 - cmpMean[i]) % 360)
+                radius = USmean[i]
+                newx = (radius * cos(thetaRad)) + wBOTx2
+                # print("newx = ", newx)
+                newy =  (radius * sin(thetaRad)) + wBOTy2
+                # print("newy = ", newy)
+                # for testing
+                # # cartesianCoords.append([i,i+1])
+                USx2.append([newx])
+                USy2.append([newy])
 
             ## graph the US point cloud data
             plt.figure(3)
 
-            plt.scatter(USx,USy, label='US point cloud', color='r', s=25, marker="o")
-            # plt.scatter(ir1x,ir1y, label='beacon1 location', color='k', s=25, marker="o")
-            # plt.scatter(ir2x,ir2y, label='beacon2 location', color='c', s=25, marker="o")
+            plt.scatter(USx1,USy1, label='US point cloud', color='r', s=25, marker="o")
             plt.axis('equal')
             plt.xlabel('x-position')
             plt.ylabel('y-position')
@@ -942,7 +962,8 @@ if __name__ == "__main__":
             plt.scatter(westWallx, westWally, label='westWall', color='y', s=10, marker=".")
             plt.scatter(eastWallx, eastWally, label='eastWall', color='y', s=10, marker=".")
 
-            plt.scatter(USx, USy, label='US point cloud', color='r', s=25, marker="o")
+            plt.scatter(USx1, USy1, label='US point cloud', color='r', s=25, marker="o")
+            plt.scatter(USx2, USy2, label='US point cloud', color='g', s=25, marker="o")
 
             plt.scatter(wBOTx1, wBOTy1, label='robot location b1 ref', color='b', s=25, marker="o")
             plt.scatter(wBOTx2, wBOTy2, label='robot location b2 ref', color='m', s=25, marker="o")
