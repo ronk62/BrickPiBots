@@ -980,6 +980,10 @@ if __name__ == "__main__":
 
             sample_mode = -1
             print("Sampling complete. Returning to keyboard cmd mode.")
+            # cleanup arrays and vars
+            USmean = np.array([], dtype=np.int32)
+            cmpMean = np.array([], dtype=np.int32)
+
 
                 ######################
                 ######################
