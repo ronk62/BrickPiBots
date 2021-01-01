@@ -6,7 +6,8 @@
 #                           - stripped out all code that saves or loads data from files
 #                           - decided to leave the wasd and motor stuff intact for now
 #                           - this version updates very slowly because of the samlping and stats
-#                           - not too great for watching transients
+#                           - not too great for watching brief transients
+# 12/31/2020                - updated to show 3 plots: mean dist, heading, stdev for US, ir1, ir2 
 
 #                           - DON'T Forget to start xming and export DISPLAY=10.0.0.9:0.0  (change IP addr as req'd)
 
@@ -175,7 +176,9 @@ turnRatio = 0.0  # set this value to -0.5 to +0.5; subtract from 1 to set turn r
 # setup for live graphing
 style.use('fivethirtyeight')
 fig = plt.figure()
-ax1 = fig.add_subplot(1,1,1)
+ax1 = fig.add_subplot(3,1,1)
+ax2 = fig.add_subplot(3,1,2)
+ax3 = fig.add_subplot(3,1,3)
 
 
 def animate(i):
@@ -194,7 +197,7 @@ def animate(i):
     ir2r = np.array([], dtype=np.int32)
     ir2h = np.array([], dtype=np.int32)
     # take n samples
-    for j in range(5):
+    for j in range(1000):
         usDistCmVal = us.distance_centimeters
         ir1DistVal = ir.distance(channel=1)
         ir2DistVal = ir.distance(channel=2)
@@ -257,7 +260,21 @@ def animate(i):
     ir2hstd = np.append(ir2hstd, np.std(ir2h))
 
     ax1.clear()
-    ax1.plot(ODt, USmean)
+    ax1.plot(ODt, USmean, label='USmean')
+    ax1.plot(ODt, ir1rmean, label='ir1rmean')
+    ax1.plot(ODt, ir2rmean, label='ir2rmean')
+    ax1.legend()
+
+    ax2.clear()
+    ax2.plot(ODt, ir1hmean, label='ir1hmean')
+    ax2.plot(ODt, ir2hmean, label='ir2hmean')
+    ax2.legend()
+
+    ax3.clear()
+    ax3.plot(ODt, USstd, label='USstd')
+    ax3.plot(ODt, ir1rstd, label='ir1rstd')
+    ax3.plot(ODt, ir2rstd, label='ir2rstd')
+    ax3.legend()
 
     if USmean.size > 100000:
         sample_mode = -1
