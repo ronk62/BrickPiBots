@@ -176,6 +176,7 @@ def animate(i):
     global ir1r, ir1h
     global ir2r, ir2h
     # global printVerbose
+    global sample_mode, x
 
     # read the sensors
     usDistCmVal = us.distance_centimeters
@@ -232,6 +233,11 @@ def animate(i):
     ax2.plot(ODt, ir2h, label='ir2h')
     ax2.legend()
 
+    # if x == 105: # i pushed - toggle sample mode on and off
+    #     sample_mode *= -1
+    #     print("toggled sample_mode (i); now set to...  ", sample_mode)
+    #     x = 0   # req'd to prevent the equiv of a repeat/stuck keyboad key
+                
     if ODt.size > 100000:
         sample_mode = -1
         print("")
@@ -240,7 +246,10 @@ def animate(i):
         print ("ODt.size = ", ODt.size)
         print("")
 
-
+### matplotlib (and other GUI related stuff) must run in the 'main' thread
+# def animationLoop(name):
+#     ani = animation.FuncAnimation(fig, animate, interval=100)
+#     plt.show()
 
 def keyboardInput(name):
     while (True):
@@ -250,10 +259,14 @@ def keyboardInput(name):
 
 
 if __name__ == "__main__":
-    myThread = threading.Thread(target=keyboardInput, args=(1,), daemon=True)
-    myThread.start()
+    kbThread = threading.Thread(target=keyboardInput, args=(1,), daemon=True)
+    kbThread.start()
     print ("Ready for keyboard commands...")
 
+    ### matplotlib (and other GUI related stuff) must run in the 'main' thread
+    # aniThread = threading.Thread(target=animationLoop, args=(1,), daemon=True)
+    # aniThread.start()
+    # print ("Starting Plot animation...")
 
 
 ### Main Loop
@@ -330,11 +343,12 @@ if __name__ == "__main__":
         if x == 105: # i pushed - toggle sample mode on and off
             sample_mode *= -1
             print("toggled sample_mode (i); now set to...  ", sample_mode)
+            x = 0   # req'd to prevent the equiv of a repeat/stuck keyboad key
         
         if sample_mode > 0:
             try:
-                ani = animation.FuncAnimation(fig, animate, interval=100)
-                plt.show()        
+                ani = animation.FuncAnimation(fig, animate, interval=100, repeat=False)
+                plt.show()
                 
             except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
                 mL.on(0, brake=False)
