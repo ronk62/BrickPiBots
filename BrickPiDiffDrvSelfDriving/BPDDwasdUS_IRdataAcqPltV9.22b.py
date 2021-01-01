@@ -182,8 +182,15 @@ ir2hstd = np.array([], dtype=np.int32)    # array to hold processed data ir2 hea
 
 # IR calibration vars
 beaconCali_mode = 0
-ir1DistCaliK = 3.2373925234111067
-ir1DistCaliOffset = 2.9145308391561286
+### vars from ~Sep 2020
+# ir1DistCaliK = 3.2373925234111067
+# ir1DistCaliOffset = 2.9145308391561286
+
+### the below ir1 Cali vars were updated on 12/28/2020
+ir1DistCaliK = 3.2787804152141273
+ir1DistCaliOffset = -6.1531127913372075
+
+### vars from ~Sep 2020
 ir2DistCaliK = 3.2099057918114617
 ir2DistCaliOffset = -4.590962433759358
 
