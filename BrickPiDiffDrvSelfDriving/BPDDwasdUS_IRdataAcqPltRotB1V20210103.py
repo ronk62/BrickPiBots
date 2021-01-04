@@ -577,7 +577,7 @@ if __name__ == "__main__":
 
                         # if we don't have the beacon1 angle/distance yet, rotate to find those
                         if not b1lock:
-                            if b1IRdistMean > 0 and b1IRhStdev < 300 and b1IRhMean < -20:
+                            if b1IRdistMean > 0 and b1IRhStdev < 300 and b1IRhMean < -7:
                                 # move ccw 30 deg
                                 print("moving ccw 30 deg; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
                                 mL.on_for_degrees(speed=-14, degrees=135)
@@ -587,7 +587,7 @@ if __name__ == "__main__":
                                 print("moving ccw 10 deg; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
                                 mL.on_for_degrees(speed=-7, degrees=45)
                                 hailmarryTimeout = time.time()
-                            if b1IRdistMean > 0 and b1IRhStdev < 300 and b1IRhMean > 20:
+                            if b1IRdistMean > 0 and b1IRhStdev < 300 and b1IRhMean > 7:
                                 # move cw 30 deg
                                 print("moving cw 30 deg; b1IRdistMean, b1IRhMean, b1IRhStdev", b1IRdistMean, b1IRhMean, b1IRhStdev)
                                 mL.on_for_degrees(speed=14, degrees=135)
