@@ -268,35 +268,83 @@ if __name__ == "__main__":
             print("")
             
 
-        if x == 103: # g pushed - graph the data
+        if x == 103: # g pushed - process and graph the data
+            print("Process raw data...")
+            # initialize arrays for processed/filtered data
+            ODtTrunc = np.array([], dtype=np.int32)     # discard values when raw ir1r > 80
+            ir1rTrunc = np.array([], dtype=np.int32)    # discard values when raw ir1r > 80
+            ir1hTrunc = np.array([], dtype=np.int32)    # discard values when raw ir1r > 80
+            ir1rTruncMean = np.array([], dtype=np.int32)
+            ir1hTruncMean = np.array([], dtype=np.int32)
+
+            # Truncate...discard values when raw ir1r > 80
+            print("Truncate data when raw ir1r (distance) > 80 ...")
+            for i in range(len(ir1r)):
+                if ir1r[i] <= 80:
+                    ODtTrunc = np.append(ODtTrunc, ODt[i])
+                    ir1rTrunc = np.append(ir1rTrunc, ir1r[i])
+                    ir1hTrunc = np.append(ir1hTrunc, ir1h[i])
+            
+            # get mean avgs from truncated
+            if len(ir1rTrunc) > 0 :  # avoid errors from empty arrays
+                print("calculating mean avg values from truncated arrays ...")
+                ir1rTruncMean_val = np.mean(ir1rTrunc)
+                ir1hTruncMean_val = np.mean(ir1hTrunc)
+
+                # populate arrays with the mean avg vals for trendlines in plots
+                for i in range(len(ir1rTrunc)):
+                    ir1rTruncMean = np.append(ir1rTruncMean, ir1rTruncMean_val)
+                    ir1hTruncMean = np.append(ir1hTruncMean, ir1hTruncMean_val)
+
+            # get current date and time and set to var for plot titles
+            t = time.localtime()
+            dateTime = time.asctime()
+
+
+            # Create plots
+
+            # raw data
             plt.figure(1)
             plt.plot(ODt,ir1r, label='ir1r')
             plt.plot(ODt,ir1h, label='ir1h')
             
             plt.xlabel('ODt')
             plt.ylabel('sensor values')
-            plt.title('sensor data Jan 2021 rotIRbeacon') 
+            plt.title('raw data rotIRbeacon  ' + dateTime)
+            plt.legend()
+            #plt.show()
+
+
+            # processed data
+            plt.figure(2)
+            plt.plot(ODtTrunc,ir1rTrunc, label='ir1r truncated')
+            plt.plot(ODtTrunc,ir1hTrunc, label='ir1h truncated')
+            plt.plot(ODtTrunc,ir1rTruncMean, label='ir1rTruncMean trendline')
+            plt.plot(ODtTrunc,ir1hTruncMean, label='ir1hTruncMean trendline')
+            
+            plt.xlabel('ODtTrunc')
+            plt.ylabel('sensor values')
+            plt.title('processed data rotIRbeacon  ' + dateTime)
+            plt.legend()
+            #plt.show()
+
+
+            # combined data
+            plt.figure(3)
+            plt.plot(ODt,ir1r, label='ir1r')
+            plt.plot(ODt,ir1h, label='ir1h')
+            plt.plot(ODtTrunc,ir1rTrunc, label='ir1r truncated')
+            plt.plot(ODtTrunc,ir1hTrunc, label='ir1h truncated')
+            plt.plot(ODtTrunc,ir1rTruncMean, label='ir1rTruncMean trendline')
+            plt.plot(ODtTrunc,ir1hTruncMean, label='ir1hTruncMean trendline')
+            
+            plt.xlabel('ODtTrunc')
+            plt.ylabel('sensor values')
+            plt.title('combined raw/processed data rotIRbeacon  ' + dateTime)
             plt.legend()
             plt.show()
 
             
-            
-            ####
-            # plt.figure(2)
-            # plt.plot(ODt,cmpMean, label='cmpMean')
-            # plt.plot(ODt,ir2rmean, label='ir2rmean')
-            # plt.plot(ODt,lpfir2rmean, label='lpfir2rmean')
-            # plt.plot(ODt,ir2hmeanX10, label='ir2hmeanX10')                        
-            # plt.plot(ODt,ir2rstdX10, label='ir2rstdX10')
-            # plt.plot(ODt,ir2hstdX10, label='ir2hstdX10')
-            # # plt.plot(ODt,ir2hmean, label='ir2hmean')
-            # plt.plot(ODt,lpfir2hmean, label='lpfir2hmean')
-
-            # plt.xlabel('ODt')
-            # plt.ylabel('sensor values')
-            # plt.title('sensor data V9x2b')      ### csv input files are V902 1-4 and V912 5-7
-            # plt.legend()
-            # plt.show()
 
 
         if x == 105: # i pushed - toggle sample mode on and off
