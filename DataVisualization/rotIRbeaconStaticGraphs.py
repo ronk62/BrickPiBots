@@ -269,21 +269,30 @@ if __name__ == "__main__":
             
 
         if x == 103: # g pushed - process and graph the data
-            print("Process raw data...")
-            # initialize arrays for processed/filtered data
-            ODtTrunc = np.array([], dtype=np.int32)     # discard values when raw ir1r > 80
-            ir1rTrunc = np.array([], dtype=np.int32)    # discard values when raw ir1r > 80
-            ir1hTrunc = np.array([], dtype=np.int32)    # discard values when raw ir1r > 80
+            print("Processing raw data...")
+            # initialize arrays and vars for processed/filtered data
+            ODtTrunc = np.array([], dtype=np.int32)     # keep values when raw ir1r <= 80
+            ir1rTrunc = np.array([], dtype=np.int32)    # keep values when raw ir1r <= 80
+            ir1hTrunc = np.array([], dtype=np.int32)    # keep values when raw ir1r <= 80
             ir1rTruncMean = np.array([], dtype=np.int32)
             ir1hTruncMean = np.array([], dtype=np.int32)
+            ODtTrunc2 = np.array([], dtype=np.int32)     # keep 'ir1r <= 80' and 'ir1h >= -5 and ir1h <= 5'
+            ir1rTrunc2 = np.array([], dtype=np.int32)    # keep 'ir1r <= 80' and 'ir1h >= -5 and ir1h <= 5'
+            ir1hTrunc2 = np.array([], dtype=np.int32)    # keep 'ir1r <= 80' and 'ir1h >= -5 and ir1h <= 5'
+            ir1rTrunc2Mean = np.array([], dtype=np.int32)
+            ir1hTrunc2Mean = np.array([], dtype=np.int32)
 
             # Truncate...discard values when raw ir1r > 80
-            print("Truncate data when raw ir1r (distance) > 80 ...")
+            print("Truncating data when raw ir1r (distance) > 80 ...")
             for i in range(len(ir1r)):
                 if ir1r[i] <= 80:
                     ODtTrunc = np.append(ODtTrunc, ODt[i])
                     ir1rTrunc = np.append(ir1rTrunc, ir1r[i])
                     ir1hTrunc = np.append(ir1hTrunc, ir1h[i])
+                    if ir1h[i] >= -5 and ir1h[i] <= 5:
+                        ODtTrunc2 = np.append(ODtTrunc2, ODt[i])
+                        ir1rTrunc2 = np.append(ir1rTrunc2, ir1r[i])
+                        ir1hTrunc2 = np.append(ir1hTrunc2, ir1h[i])
             
             # get mean avgs from truncated
             if len(ir1rTrunc) > 0 :  # avoid errors from empty arrays
@@ -291,10 +300,80 @@ if __name__ == "__main__":
                 ir1rTruncMean_val = np.mean(ir1rTrunc)
                 ir1hTruncMean_val = np.mean(ir1hTrunc)
 
-                # populate arrays with the mean avg vals for trendlines in plots
+                # populate trunc arrays with the mean avg vals for trendlines in plots
                 for i in range(len(ir1rTrunc)):
                     ir1rTruncMean = np.append(ir1rTruncMean, ir1rTruncMean_val)
                     ir1hTruncMean = np.append(ir1hTruncMean, ir1hTruncMean_val)
+
+            # get mean avgs from trunc2
+            if len(ir1hTrunc2) > 0 :  # avoid errors from empty arrays
+                print("calculating mean avg values from trunc2 arrays ...")
+                ir1rTrunc2Mean_val = np.mean(ir1rTrunc2)
+                ir1hTrunc2Mean_val = np.mean(ir1hTrunc2)
+
+                # populate trunc2 arrays with the mean avg vals for trendlines in plots
+                for i in range(len(ir1hTrunc2)):
+                    ir1rTrunc2Mean = np.append(ir1rTrunc2Mean, ir1rTrunc2Mean_val)
+                    ir1hTrunc2Mean = np.append(ir1hTrunc2Mean, ir1hTrunc2Mean_val)
+
+            # print size and stats for processed arrays
+            print("")
+            print("Trunc...")
+            if len(ODtTrunc) > 0 :  # avoid errors from empty arrays
+                print ("ODtTrunc.size = ", ODtTrunc.size)
+                print("min      max      mean      std")
+                print(np.min(ODtTrunc), np.max(ODtTrunc), np.mean(ODtTrunc), np.std(ODtTrunc))
+                print("")
+                print ("ir1rTrunc.size = ", ir1rTrunc.size)
+                print("min      max      mean      std")
+                print(np.min(ir1rTrunc), np.max(ir1rTrunc), np.mean(ir1rTrunc), np.std(ir1rTrunc))
+                print("")
+                print ("ir1hTrunc.size = ", ir1hTrunc.size)
+                print("min      max      mean      std")
+                print(np.min(ir1hTrunc), np.max(ir1hTrunc), np.mean(ir1hTrunc), np.std(ir1hTrunc))
+            else:
+                print("Trunc arrays are size 0")
+            print("")
+            print("")
+
+            print("Trunc2...")
+            if len(ODtTrunc2) > 0 :  # avoid errors from empty arrays
+                print ("ODtTrunc2.size = ", ODtTrunc2.size)
+                print("min      max      mean      std")
+                print(np.min(ODtTrunc2), np.max(ODtTrunc2), np.mean(ODtTrunc2), np.std(ODtTrunc2))
+                print("")
+                print ("ir1rTrunc2.size = ", ir1rTrunc2.size)
+                print("min      max      mean      std")
+                print(np.min(ir1rTrunc2), np.max(ir1rTrunc2), np.mean(ir1rTrunc2), np.std(ir1rTrunc2))
+                print("")
+                print ("ir1hTrunc2.size = ", ir1hTrunc2.size)
+                print("min      max      mean      std")
+                print(np.min(ir1hTrunc2), np.max(ir1hTrunc2), np.mean(ir1hTrunc2), np.std(ir1hTrunc2))
+            else:
+                print("Trunc2 arrays are size 0")
+            print("")
+            print("")
+
+            # calculate and print scaled distance val in cm and inches
+            # note...the below ir1 Cali vars were updated on 12/28/2020
+            ir1DistCaliK = 3.2787804152141273
+            ir1DistCaliOffset = -6.1531127913372075
+            
+            if len(ir1rTrunc) > 0 :  # avoid errors from empty arrays
+                scaled_ir1rTruncMean_val = (ir1rTruncMean_val * ir1DistCaliK) + ir1DistCaliOffset
+                print("Distance (Trunc in cm) = ", + scaled_ir1rTruncMean_val)
+                print("Distance (Trunc in inches) = ", + (scaled_ir1rTruncMean_val / 2.54))
+            else:
+                print("ir1rTruncMean_val not available (ir1rTrunc array empty)")
+
+            if len(ir1rTrunc2) > 0 :  # avoid errors from empty arrays
+                scaled_ir1rTrunc2Mean_val = (ir1rTrunc2Mean_val * ir1DistCaliK) + ir1DistCaliOffset
+                print("Distance (Trunc2 in cm) = ", + scaled_ir1rTrunc2Mean_val)
+                print("Distance (Trunc2 in inches) = ", + (scaled_ir1rTrunc2Mean_val / 2.54))
+            else:
+                print("ir1rTrunc2Mean_val not available (ir1rTrunc2 array empty)")
+
+            
 
             # get current date and time and set to var for plot titles
             t = time.localtime()
@@ -315,7 +394,7 @@ if __name__ == "__main__":
             #plt.show()
 
 
-            # processed data
+            # processed trunc data
             plt.figure(2)
             plt.plot(ODtTrunc,ir1rTrunc, label='ir1r truncated')
             plt.plot(ODtTrunc,ir1hTrunc, label='ir1h truncated')
@@ -324,13 +403,27 @@ if __name__ == "__main__":
             
             plt.xlabel('ODtTrunc')
             plt.ylabel('sensor values')
-            plt.title('processed data rotIRbeacon  ' + dateTime)
+            plt.title('processed trunc data rotIRbeacon  ' + dateTime)
             plt.legend()
             #plt.show()
 
 
-            # combined data
+            # processed trunc2 data
             plt.figure(3)
+            plt.plot(ODtTrunc2,ir1rTrunc2, label='ir1r trunc2')
+            plt.plot(ODtTrunc2,ir1hTrunc2, label='ir1h trunc2')
+            plt.plot(ODtTrunc2,ir1rTrunc2Mean, label='ir1rTrunc2Mean trendline')
+            plt.plot(ODtTrunc2,ir1hTrunc2Mean, label='ir1hTrunc2Mean trendline')
+            
+            plt.xlabel('ODtTrunc')
+            plt.ylabel('sensor values')
+            plt.title('processed trunc2 data rotIRbeacon  ' + dateTime)
+            plt.legend()
+            #plt.show()
+
+
+            # combined raw/trunc data
+            plt.figure(4)
             plt.plot(ODt,ir1r, label='ir1r')
             plt.plot(ODt,ir1h, label='ir1h')
             plt.plot(ODtTrunc,ir1rTrunc, label='ir1r truncated')
@@ -340,7 +433,23 @@ if __name__ == "__main__":
             
             plt.xlabel('ODtTrunc')
             plt.ylabel('sensor values')
-            plt.title('combined raw/processed data rotIRbeacon  ' + dateTime)
+            plt.title('combined raw/trunc processed data rotIRbeacon  ' + dateTime)
+            plt.legend()
+            #plt.show()
+
+
+            # combined raw/trunc2 data
+            plt.figure(5)
+            plt.plot(ODt,ir1r, label='ir1r')
+            plt.plot(ODt,ir1h, label='ir1h')
+            plt.plot(ODtTrunc2,ir1rTrunc2, label='ir1r trunc2')
+            plt.plot(ODtTrunc2,ir1hTrunc2, label='ir1h trunc2')
+            plt.plot(ODtTrunc2,ir1rTrunc2Mean, label='ir1rTrunc2Mean trendline')
+            plt.plot(ODtTrunc2,ir1hTrunc2Mean, label='ir1hTrunc2Mean trendline')
+            
+            plt.xlabel('ODtTrunc')
+            plt.ylabel('sensor values')
+            plt.title('combined raw/trunc2 processed data rotIRbeacon  ' + dateTime)
             plt.legend()
             plt.show()
 
