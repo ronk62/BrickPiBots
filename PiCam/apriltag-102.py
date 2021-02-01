@@ -4,6 +4,9 @@
 ########  change log  ########
 # 1/24/2021 -   created from apriltag-101.py but added matrix math to invert the frame perspective
 #               from camera->tag to tag->camera
+#
+# 1/31/2021 -   added section to convert and show Robot heading (Z) in Euler angle for rotation in Y axis
+#
 
 '''
 initial content from site: https://www.instructables.com/id/Automatic-Vision-Object-Tracking/
@@ -14,6 +17,7 @@ and https://github.com/swatbotics/apriltag
 '''
 
 import numpy as np
+import math
 import cv2
 import apriltag
 import time, os
@@ -28,6 +32,8 @@ camInTagFrame = np.array([[],[],[],[]], dtype=np.int32)
 cap = cv2.VideoCapture(0)
  
 while(True):
+    # for timing analysis
+    tic = time.time()
     ret, frame = cap.read()
     # frame = cv2.flip(frame, -1) # Flip camera vertically
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
@@ -67,10 +73,21 @@ while(True):
         print(np.matrix(tagInCamFrame))
         print("")
         
+        # calculate and print camInTagFrame
         print("")
         print("inverted (camInTagFrame) pose dector result is... ")
         print(np.matrix(camInTagFrame))
         print("")
+
+        # calculate and print Robot heading (Z) Euler angle from Y axis rotation
+        # column 3, row 1
+        print("")
+        print("Robot heading (Z) Euler angle (camInTagFrame), from Y axis rotation (for Ref only, KODY KING!)... ")
+        #ZxRad = math.radians(math.asin((camInTagFrame[0][2])))
+        ZxDeg = math.degrees(math.asin((camInTagFrame[0][2])))
+        print(ZxDeg, "  degrees")
+        print("")
+        print("Loop time = ", time.time() - tic)
 
     
     ## uncomment this section to show video frames (warning:slow)
