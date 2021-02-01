@@ -237,7 +237,7 @@ while (True):
 
     if sample_mode > 0:
         result = []
-        n = 6   # limit how many times we rotate 60 degrees looking for a tag
+        n = 12   # limit how many times we rotate 30 degrees looking for a tag
         np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
         print("Capturing camera frame...")
         tic = time.time()       # for timing analysis
@@ -245,7 +245,7 @@ while (True):
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         result = detector.detect(gray)
         while result == []:
-            if n > 0:  # limit # of rotation iterations; 6 times (360 degs) should do it
+            if n > 0:  # limit # of rotation iterations; 12 times (360 degs) should do it
                 n = n -1  # decrement n
                 #np.set_printoptions(precision=2,floatmode='fixed')
                 np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
@@ -262,9 +262,9 @@ while (True):
                 # print(type(result))
                 # print("")
 
-                # rotate robot 60 deg cw as we look for a tag
-                mL.on_for_degrees(speed=14, degrees=270)
-                time.sleep(0.5)
+                # rotate robot 30 deg cw as we look for a tag
+                mL.on_for_degrees(speed=14, degrees=135)
+                time.sleep(3)
                 
         ## extract contents of results list
         for i, enum_result in enumerate(result):
