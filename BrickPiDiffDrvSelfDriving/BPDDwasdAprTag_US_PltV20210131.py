@@ -6,7 +6,8 @@
 #                             some rudimentary point-to-point auto-pilot
 #                           - most of the apriltag and opencv code was developed in file 'apriltag-102.py'
 #                           - fully removed ir beacon signal processing and related code and vars
-#                               -- note: kept driver and port initialization for now
+#                               -- note: kept IR driver and port initialization for now
+# 2/4/2021                  - added code to flush the camera frame buffer when tag not seen on initial cap
 
 #                           - DON'T Forget to start xming and export DISPLAY=10.0.0.9:0.0  (change IP addr as req'd)
 
@@ -247,7 +248,15 @@ while (True):
         while result == []:
             if n > 0:  # limit # of rotation iterations; 12 times (360 degs) should do it
                 n = n -1  # decrement n
-                #np.set_printoptions(precision=2,floatmode='fixed')
+                
+                # rotate robot 30 deg cw as we look for a tag
+                mL.on_for_degrees(speed=14, degrees=135)
+                time.sleep(3)
+
+                # flush the camera frame buffer
+                for i in range(7):
+                    ret, frame = cap.read()
+
                 np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
                 print("Trying again...capturing camera frame...")
                 # for timing analysis
@@ -255,17 +264,20 @@ while (True):
                 ret, frame = cap.read()
                 gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 result = detector.detect(gray)
-                # # for initial testing/devopment
-                # print("dector result is ", result)
-                # print("")
-                # print("len of result is ", len(result))
-                # print(type(result))
-                # print("")
+                # for initial testing/devopment
+                print("dector result is ", result)
+                print("")
+                print("len of result is ", len(result))
+                print(type(result))
+                print("")
+                print("delta t = ", time.time() - tic)
+                print("")
+            else:
+                print("tag not found after wait time of ", time.time() - tic)
+                print("")
+                time.sleep(20)
+                n = 12  # reset n
 
-                # rotate robot 30 deg cw as we look for a tag
-                mL.on_for_degrees(speed=14, degrees=135)
-                time.sleep(3)
-                
         ## extract contents of results list
         for i, enum_result in enumerate(result):
             # print("i = ", i)
