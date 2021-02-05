@@ -25,6 +25,7 @@ import time, os
 #np.set_printoptions(precision=2,floatmode='fixed')
 np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
+result = []
 
 tagInCamFrame = np.array([[],[],[],[]], dtype=np.int32)
 camInTagFrame = np.array([[],[],[],[]], dtype=np.int32)
@@ -32,21 +33,38 @@ camInTagFrame = np.array([[],[],[],[]], dtype=np.int32)
 cap = cv2.VideoCapture(0)
  
 while(True):
+    result = [] # clear list
+    n = 12   # limit how many times we iterate looking for a tag
+    i = 25   # load as many as 25 new frames to deal with some buffering in the pipeline
     # for timing analysis
     tic = time.time()
-    ret, frame = cap.read()
-    # frame = cv2.flip(frame, -1) # Flip camera vertically
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+    while result == []:
+        if i > 0:   # load as many as 25 new frames
+            print("i = ", i)
+            i = i - 1  # decrement i
+            ret, frame = cap.read()
+            # frame = cv2.flip(frame, -1) # Flip camera vertically
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            detector = apriltag.Detector()
+            result = detector.detect(gray)
+            # for initial testing/devopment
+            print("dector result is ", result)
+            print("")
+            print("len of result is ", len(result))
+            print(type(result))
+            print("")
+        else:
+            if n > 0:  # limit # of iterations; 12 times should do it
+                print("n = ", n)
+                n = n - 1  # decrement n
+                i = 25     # reset i to 25
+            else:
+                print("tag not found")
+                time.sleep(5)
 
-    detector = apriltag.Detector()
-    result = detector.detect(gray)
-    # # for initial testing/devopment
-    # print("dector result is ", result)
-    # print("")
-    # print("len of result is ", len(result))
-    # print(type(result))
-    # print("")
     
+    n = 12     # reset n to 12 each time we succeed in finding a tag
+
     ## extract contents of results list
     for i, enum_result in enumerate(result):
         # print("i = ", i)
@@ -67,7 +85,7 @@ while(True):
         # the x,y,z R and T vectors in this view show the camera/robot location relative to the tag
         camInTagFrame = np.linalg.inv(tagInCamFrame)
 
-        os.system("clear")
+        # os.system("clear")
         print("")
         print("apriltag standard (tagInCamFrame) pose dector result is... ")
         print(np.matrix(tagInCamFrame))
@@ -89,11 +107,12 @@ while(True):
         print("")
         print("Loop time = ", time.time() - tic)
 
+
     
-    ## uncomment this section to show video frames (warning:slow)
-    cv2.imshow('gray', gray)
-    if cv2.waitKey(1) & 0xFF == ord('q'):
-        break
+    # ## uncomment this section to show video frames (warning:slow)
+    # cv2.imshow('gray', gray)
+    # if cv2.waitKey(1) & 0xFF == ord('q'):
+    #     break
 
 cap.release()
 cv2.destroyAllWindows()
