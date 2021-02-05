@@ -8,6 +8,7 @@
 #                           - fully removed ir beacon signal processing and related code and vars
 #                               -- note: kept IR driver and port initialization for now
 # 2/4/2021                  - added code to flush the camera frame buffer when tag not seen on initial cap
+#                           - fixed world and relative frame bugs caused by faulty logic and var references
 
 #                           - DON'T Forget to start xming and export DISPLAY=10.0.0.9:0.0  (change IP addr as req'd)
 
@@ -251,7 +252,7 @@ while (True):
                 
                 # rotate robot 30 deg cw as we look for a tag
                 mL.on_for_degrees(speed=14, degrees=135)
-                time.sleep(3)
+                time.sleep(1)
 
                 # flush the camera frame buffer
                 for i in range(7):
@@ -304,7 +305,7 @@ while (True):
             print(np.matrix(tagInCamFrame))
             print("")
 
-            # show Tag X,Z coords in Robot Frame
+            # show Tag X,Z coords in Cam/Robot Frame
             AprTagx1 = 100 * (tagInCamFrame[0][3])
             AprTagy1 = 100 * (tagInCamFrame[2][3])
             print("Tag X,Z coords in Robot Frame ", AprTagx1, AprTagy1)
@@ -331,16 +332,17 @@ while (True):
             print(ZxDeg, "  degrees")
             print("")
             print("Loop time = ", time.time() - tic)
+            print("")
 
     
-        ## uncomment this section to show video frames (warning:slow)
-        cv2.imshow('gray', gray)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-        # print msg and sleep/pause for a few seconds to view image
-        print("Wait for image to display for a few seconds, then move on...")
-        time.sleep(3)
+        ### the imshow code below does not work in this context for reasone not yet known
+        # ## uncomment this section to show video frames (warning:slow)
+        # cv2.imshow('gray', gray)
+        # if cv2.waitKey(1) & 0xFF == ord('q'):
+        #     break
+        # # print msg and sleep/pause for a few seconds to view image
+        # print("Wait for image to display for a few seconds, then move on...")
+        # time.sleep(3)
 
         cap.release()
         cv2.destroyAllWindows()
@@ -351,21 +353,25 @@ while (True):
         ## setup for US data capture
         ## comment the following section for quick testing
         ## uncomment for normal operation
+        print("rototate to initial cmp angle 350 +/- 2")
+        print("")
         # rototate to initial cmp angle 350 +/- 2
-        # while compassVal < 348 or compassVal > 352:
-        #     compassVal = cmp.value(0)
-        #     if compassVal >= 125 and compassVal < 352:
-        #         # rotate cw
-        #         mL.on(7, brake=False)
-        #     if compassVal < 125 or compassVal > 352:
-        #         # rotate ccw
-        #         mL.on(-7, brake=False)
-        # mL.on(0, brake=True)
-        # time.sleep(0.5)
+        while compassVal < 348 or compassVal > 352:
+            compassVal = cmp.value(0)
+            if compassVal >= 125 and compassVal < 352:
+                # rotate cw
+                mL.on(7, brake=False)
+            if compassVal < 125 or compassVal > 352:
+                # rotate ccw
+                mL.on(-7, brake=False)
+        mL.on(0, brake=True)
+        time.sleep(0.5)
 
+        print("rotate to angle i; stop and take US data samples")
+        print("")
         # rotate to angle i; stop and take US data samples
-        for i in range(compassVal - 1,compassVal + 1,1):  ### use for quick IR testing
-        #for i in range(6,360,6):  ### use for normal operation
+        #for i in range(compassVal - 1,compassVal + 1,1):  ### use for quick IR testing
+        for i in range(6,360,6):  ### use for normal operation
             ## move motor to new cmps angle
             while compassVal < i - 1 or compassVal > i + 1:
                 compassVal = cmp.value(0)
@@ -418,11 +424,11 @@ while (True):
         plt.figure(1)
 
         plt.scatter(0,0, label='robot location', color='r', s=25, marker="o")
-        plt.scatter(BOTx1,BOTy1, label='tag location', color='k', s=25, marker="o")
+        plt.scatter(AprTagx1,AprTagy1, label='tag location', color='k', s=25, marker="o")
         plt.axis('equal')
         plt.xlabel('x-position')
         plt.ylabel('y-position')
-        plt.title('Apriltag location - robot frame relative position data V20210131')
+        plt.title('Apriltag location in robot frame - relative position data V20210131')
         plt.legend()
         # plt.show()
 
@@ -430,12 +436,12 @@ while (True):
         ## convert from robot frame coords to world frame
         # Apriltag world frame coords
         wAprTag1x = 0
-        wAprTag1y = 0
+        wAprTag1y = 400
 
 
         # robot world frame coords using Apriltag ref
-        wBOTx1 = wAprTag1x - BOTx1
-        wBOTy1 = wAprTag1y - BOTy1
+        wBOTx1 = wAprTag1x + BOTx1
+        wBOTy1 = wAprTag1y + BOTy1
 
 
         print("wAprTag1x, wAprTag1y (AprTag1 world frame location) = ", wAprTag1x, wAprTag1y)
@@ -448,11 +454,11 @@ while (True):
         ## world frame "room" configuration space (simple rectangle)
 
         # define the bounding box of the rectangular space - lower left (origin) = swCorner
-        swCornerx = 200
-        swCornery = -100
+        swCornerx = 0
+        swCornery = 0
 
-        neCornerx = -200
-        neCornery = 0
+        neCornerx = 200
+        neCornery = 400
 
         # North and South Wall boundaries
         southWallx = np.array([], dtype=np.int32)
@@ -477,16 +483,16 @@ while (True):
             eastWally = np.append(eastWally, i)
         
         # process the raw US and compass polar coord data into point cloud data
-        # use Apriltag1 as world frame ref
+        # use Bot world frame (wBOTx1,wBOTy1) as plot ref
         USx1 = []
         USy1 = []
         for i in range(len(cmpMean)):
             # compass to std graph frame version
-            thetaRad = math.radians((415 - cmpMean[i]) % 360)
+            thetaRad = math.radians((418 - cmpMean[i]) % 360)
             radius = USmean[i]
-            newx = (radius * math.cos(thetaRad)) + BOTx1
+            newx = (radius * math.cos(thetaRad)) + wBOTx1
             # print("newx = ", newx)
-            newy =  (radius * math.sin(thetaRad)) + BOTy1
+            newy =  (radius * math.sin(thetaRad)) + wBOTy1
             # print("newy = ", newy)
             # for testing
             # # cartesianCoords.append([i,i+1])
