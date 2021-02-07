@@ -435,7 +435,9 @@ while (True):
 
         ## convert from robot frame coords to world frame
         # Apriltag world frame coords
-        wAprTag1x = 0
+        #wAprTag1x = 0
+        #wAprTag1x = 69   # alternate tag location for testing
+        wAprTag1x = 120   # another alternate tag location for testing
         wAprTag1y = 400
 
 
