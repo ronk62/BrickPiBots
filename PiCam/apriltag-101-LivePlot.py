@@ -102,16 +102,17 @@ def animate(i):
                 Xt = np.append(Xt, emum_result_pose[0][3])
                 Yt = np.append(Yt, emum_result_pose[1][3])
                 Zt = np.append(Zt, emum_result_pose[2][3])
-                    
+        
+        #append the independant array then increment ii
+        ODt = np.append(ODt, ii)
+        ii = ii + 1
    
     ## uncomment this section to show video frames (warning:slow)
-    cv2.imshow('gray', gray) ### <--- this line causes an error and fails to show image, in this implementation
+    # cv2.imshow('gray', gray) ### <--- this line causes an error and fails to show image, in this implementation
     # if cv2.waitKey(1) & 0xFF == ord('q'):
     #     break
 
-    #append the independant array then increment ii
-    ODt = np.append(ODt, ii)
-    ii = ii + 1
+    
 
 
     ax1.clear()
