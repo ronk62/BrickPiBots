@@ -437,7 +437,7 @@ while (True):
         # Apriltag world frame coords
         #wAprTag1x = 0
         #wAprTag1x = 69   # alternate tag location for testing
-        wAprTag1x = 120   # another alternate tag location for testing
+        wAprTag1x = 148   # another alternate tag location for testing
         wAprTag1y = 400
 
 
