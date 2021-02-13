@@ -91,7 +91,7 @@ while(True):
         print(np.matrix(tagInCamFrame))
         print("")
         
-        # calculate and print camInTagFrame
+        # print camInTagFrame
         print("")
         print("inverted (camInTagFrame) pose dector result is... ")
         print(np.matrix(camInTagFrame))
