@@ -9,9 +9,18 @@
 #                               -- note: kept IR driver and port initialization for now
 # 2/4/2021                  - added code to flush the camera frame buffer when tag not seen on initial cap
 #                           - fixed world and relative frame bugs caused by faulty logic and var references
+# 2/15/2021                 - Added the below after capturing chessboard impages with the piCam and then running
+#                             the calibration code, calibrate_camera.py
+#                           - all units below measured in pixels:
+#                             fx = 604.8851295863385
+#                             fy = 606.0410127799453
+#                             cx = 320.0
+#                             cy = 240.0
+#                             pastable into Python:
+#                             fx, fy, cx, cy = (604.8851295863385, 606.0410127799453, 320.0, 240.0)
+
 
 #                           - DON'T Forget to start xming and export DISPLAY=10.0.0.9:0.0  (change IP addr as req'd)
-
 
 """ 
 This program provides SLAM testing with wasd keyboard remote control and data collection.
@@ -116,6 +125,7 @@ ir.mode = 'IR-SEEK'
 # initialize PiCam, vars, arrays for image capture
 tagInCamFrame = np.array([[],[],[],[]], dtype=np.int32)
 camInTagFrame = np.array([[],[],[],[]], dtype=np.int32)
+CamZxDeg = 180
 cap = cv2.VideoCapture(0)
 detector = apriltag.Detector()
 
@@ -279,60 +289,101 @@ while (True):
                 time.sleep(20)
                 n = 12  # reset n
 
-        ## extract contents of results list
-        for i, enum_result in enumerate(result):
-            # print("i = ", i)
-            # print("enum_result is... ")
-            # print(enum_result.tostring())
-            # print("")
-            result_pose = detector.detection_pose(enum_result,camera_params=(600,600,320,240),tag_size=0.16, z_sign=1)
-            # print("")
-            # print("apriltag standard pose dector result is... ")
-            # print(result_pose)
-            # print("")
+        ## center the cam on tag Zx zero (origin)
+        while CamZxDeg < -1 or CamZxDeg > 1:
+            tic = time.time()  # for timing analysis
+            # capture new image frame from cam
+            # flush the camera frame buffer
+            for i in range(7):
+                ret, frame = cap.read()
 
-            for j, emum_result_pose in enumerate(result_pose):
-                if j == 0:
-                    tagInCamFrame = emum_result_pose
-
-            # Invert the frame perspective via matrix inversion
-            # the x,y,z R and T vectors in this view show the camera/robot location relative to the tag
-            camInTagFrame = np.linalg.inv(tagInCamFrame)
-
-            ###os.system("clear")
+            np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
+            print("centering the cam on tag Zx zero (origin)...capturing camera frame...")
+            ret, frame = cap.read()
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            result = detector.detect(gray)
+            # for initial testing/devopment
+            print("dector result is ", result)
             print("")
-            print("apriltag standard (tagInCamFrame) pose dector result is... ")
-            print(np.matrix(tagInCamFrame))
+            print("len of result is ", len(result))
+            print(type(result))
+            print("")
+            print("delta t = ", time.time() - tic)
             print("")
 
-            # show Tag X,Z coords in Cam/Robot Frame
-            AprTagx1 = 100 * (tagInCamFrame[0][3])
-            AprTagy1 = 100 * (tagInCamFrame[2][3])
-            print("Tag X,Z coords in Robot Frame ", AprTagx1, AprTagy1)
-            print("")
-            
-            # calculate and print camInTagFrame
-            print("")
-            print("inverted (camInTagFrame) pose dector result is... ")
-            print(np.matrix(camInTagFrame))
-            print("")
+            # extract contents of results list
+            for i, enum_result in enumerate(result):
+                # print("i = ", i)
+                # print("enum_result is... ")
+                # print(enum_result.tostring())
+                # print("")
+                #result_pose = detector.detection_pose(enum_result,camera_params=(600,600,320,240),tag_size=0.16, z_sign=1)
+                result_pose = detector.detection_pose(enum_result,camera_params=(604.8851295863385, 606.0410127799453, 320.0, 240.0),tag_size=0.16, z_sign=1)
+                # print("")
+                # print("apriltag standard pose dector result is... ")
+                # print(result_pose)
+                # print("")
 
-            # show Robot X,Z coords in Tag Frame
-            BOTx1 = 100 * (camInTagFrame[0][3])
-            BOTy1 = 100 * (camInTagFrame[2][3])
-            print("Robot X,Z coords in Tag Frame ", BOTx1, BOTy1)
-            print("")
-            
-            # calculate and print Robot heading (Z) Euler angle from Y axis rotation
-            # column 3, row 1
-            print("")
-            print("Robot heading (Z) Euler angle (camInTagFrame), from Y axis rotation (for Ref only, KODY KING!)... ")
-            #ZxRad = math.math.radians(math.asin((camInTagFrame[0][2])))
-            ZxDeg = math.degrees(math.asin((camInTagFrame[0][2])))
-            print(ZxDeg, "  degrees")
-            print("")
-            print("Loop time = ", time.time() - tic)
-            print("")
+                for j, emum_result_pose in enumerate(result_pose):
+                    if j == 0:
+                        tagInCamFrame = emum_result_pose
+
+                # Invert the frame perspective via matrix inversion
+                # the x,y,z R and T vectors in this view show the camera/robot location relative to the tag
+                camInTagFrame = np.linalg.inv(tagInCamFrame)
+
+                ###os.system("clear")
+                print("")
+                print("apriltag standard (tagInCamFrame) pose dector result is... ")
+                print(np.matrix(tagInCamFrame))
+                print("")
+
+                # show Tag X,Z coords in Cam/Robot Frame
+                AprTagx1 = 100 * (tagInCamFrame[0][3])
+                AprTagy1 = 100 * (tagInCamFrame[2][3])
+                print("Tag X,Z coords in Robot Frame ", AprTagx1, AprTagy1)
+                print("")
+                
+                # calculate and print camInTagFrame
+                print("")
+                print("inverted (camInTagFrame) pose dector result is... ")
+                print(np.matrix(camInTagFrame))
+                print("")
+
+                # show Robot X,Z coords in Tag Frame
+                BOTx1 = 100 * (camInTagFrame[0][3])
+                BOTy1 = 100 * (camInTagFrame[2][3])
+                print("Robot X,Z coords in Tag Frame ", BOTx1, BOTy1)
+                print("")
+                
+                # calculate and print Robot heading (Z) Euler angle from Y axis rotation
+                # use translational X and Z from tagInCamFrame, tag origin (centered) on X = 0 is the goal
+                # angle = arctan * slope (slope = rise/run = deltaZ/deltaX)
+                print("")
+                print("Robot heading (Z) Euler angle (tagInCamFrame), from Y axis rotation (for Ref only, KODY KING!)... ")
+                # arctan ((z1-z0) / (x1-x0))...x0, z0 is always 0,0 --> the origin of the cam
+                x1 = tagInCamFrame[0][3]
+                z1 = tagInCamFrame[2][3]
+                CamZxDeg = (math.degrees(math.atan(z1/x1)))
+                
+                # offset from 90 deg, since the cam z is pointing at tag x
+                if CamZxDeg >= 0:
+                    CamZxDeg = CamZxDeg - 90 # subtract 90 if CamZxDeg is positive (or zero)
+                else:
+                    CamZxDeg = 90 + CamZxDeg # add to 90 if CamZxDeg is negative
+                print(CamZxDeg, "  degrees")
+                print("")
+                print("Loop time = ", time.time() - tic)
+                print("")
+
+            ## rotate Bot/cam
+            mL.on_for_degrees(speed=7, degrees=CamZxDeg * -4.5)
+            time.sleep(1)
+
+        ## compensate for noisy/error condition when bot/cam is on camInTagFrame x = 0
+        ## in other words, the bot is straight out in front of the tag
+        if (tagInCamFrame[0][0]) >= 0.99 and (tagInCamFrame[2][2]) >= 0.99:
+            BOTx1 = 100 * (tagInCamFrame[0][3])
 
     
         ### the imshow code below does not work in this context for reasone not yet known
@@ -435,9 +486,9 @@ while (True):
 
         ## convert from robot frame coords to world frame
         # Apriltag world frame coords
-        #wAprTag1x = 0
+        wAprTag1x = 0
         #wAprTag1x = 69   # alternate tag location for testing
-        wAprTag1x = 148   # another alternate tag location for testing
+        #wAprTag1x = 148   # another alternate tag location for testing
         wAprTag1y = 400
 
 
