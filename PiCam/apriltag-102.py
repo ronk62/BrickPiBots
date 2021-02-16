@@ -8,6 +8,19 @@
 # 1/31/2021 -   added section to convert and show Robot heading (Z) in Euler angle for rotation in Y axis
 #
 
+### 2/15/2021   - Added the below after capturing chessboard impages with the piCam and then running
+#                 the calibration code, calibrate_camera.py
+
+# all units below measured in pixels:
+#   fx = 604.8851295863385
+#   fy = 606.0410127799453
+#   cx = 320.0
+#   cy = 240.0
+
+# pastable into Python:
+#   fx, fy, cx, cy = (604.8851295863385, 606.0410127799453, 320.0, 240.0)
+
+
 '''
 initial content from site: https://www.instructables.com/id/Automatic-Vision-Object-Tracking/
 
@@ -71,7 +84,8 @@ while(True):
         # print("enum_result is... ")
         # print(enum_result.tostring())
         # print("")
-        result_pose = detector.detection_pose(enum_result,camera_params=(600,600,320,240),tag_size=0.16, z_sign=1)
+        ##result_pose = detector.detection_pose(enum_result,camera_params=(600,600,320,240),tag_size=0.16, z_sign=1)
+        result_pose = detector.detection_pose(enum_result,camera_params=(604.8851295863385, 606.0410127799453, 320.0, 240.0),tag_size=0.16, z_sign=1)
         # print("")
         # print("apriltag standard pose dector result is... ")
         # print(result_pose)
