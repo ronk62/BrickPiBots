@@ -18,6 +18,9 @@
 #                             cy = 240.0
 #                             pastable into Python:
 #                             fx, fy, cx, cy = (604.8851295863385, 606.0410127799453, 320.0, 240.0)
+# 3/13/2021                 - added sections that rotate tag to align with world frome coords and calculate
+#                             the cam/bot x,y location based on this
+
 
 
 #                           - DON'T Forget to start xming and export DISPLAY=10.0.0.9:0.0  (change IP addr as req'd)
@@ -125,6 +128,8 @@ ir.mode = 'IR-SEEK'
 # initialize PiCam, vars, arrays for image capture
 tagInCamFrame = np.array([[],[],[],[]], dtype=np.int32)
 camInTagFrame = np.array([[],[],[],[]], dtype=np.int32)
+RotTagInCamFrame = np.array([[],[],[],[]], dtype=np.int32)
+RotCamInTagFrame = np.array([[],[],[],[]], dtype=np.int32)
 CamZxDeg = 180
 cap = cv2.VideoCapture(0)
 detector = apriltag.Detector()
@@ -174,6 +179,20 @@ mR.position = 0
 
 spd = 0        # set this value to -30 to +90; use to set outer wheel/motor speed; default to mL for driving straight
 turnRatio = 0.0  # set this value to -0.5 to +0.5; subtract from 1 to set turn ratio; multiply * spd to set inside motor speed
+
+def Ry(theta):
+    return np.matrix([[ math.cos(theta), 0, math.sin(theta), 0],
+                   [ 0           , 1, 0, 0           ],
+                   [-math.sin(theta), 0, math.cos(theta), 0],
+                   [0, 0, 0, 1]])
+
+# theta = math.pi/4   # 45 degrees ccw
+
+# theta = 1.570796      #   90 degrees
+theta = -1.570796     #  -90 degrees
+# theta = 3.141592      #  180 degrees
+
+R = Ry(theta)
 
 
 def keyboardInput(name):
@@ -328,32 +347,45 @@ while (True):
                     if j == 0:
                         tagInCamFrame = emum_result_pose
 
+                # Rotate the frame perspective via matrix rotation
+                RotTagInCamFrame = R * tagInCamFrame
+                RotTagInCamFrame = np.asarray(RotTagInCamFrame)
+                
                 # Invert the frame perspective via matrix inversion
                 # the x,y,z R and T vectors in this view show the camera/robot location relative to the tag
                 camInTagFrame = np.linalg.inv(tagInCamFrame)
+                RotCamInTagFrame = np.linalg.inv(RotTagInCamFrame)
 
                 ###os.system("clear")
                 print("")
                 print("apriltag standard (tagInCamFrame) pose dector result is... ")
                 print(np.matrix(tagInCamFrame))
                 print("")
+                print("Rotated tagInCamFrame pose dector result is... ")
+                print(np.matrix(RotTagInCamFrame))
+                print("")
 
                 # show Tag X,Z coords in Cam/Robot Frame
-                AprTagx1 = 100 * (tagInCamFrame[0][3])
-                AprTagy1 = 100 * (tagInCamFrame[2][3])
+                AprTagy1 = -100 * (tagInCamFrame[0][3])
+                AprTagx1 = -100 * (tagInCamFrame[2][3])
                 print("Tag X,Z coords in Robot Frame ", AprTagx1, AprTagy1)
                 print("")
                 
-                # calculate and print camInTagFrame
+                # print camInTagFrame
                 print("")
                 print("inverted (camInTagFrame) pose dector result is... ")
                 print(np.matrix(camInTagFrame))
                 print("")
+                print("inverted (RotCamInTagFrame) pose dector result is... ")
+                print(np.matrix(RotCamInTagFrame))
+                print("")
 
-                # show Robot X,Z coords in Tag Frame
-                BOTx1 = 100 * (camInTagFrame[0][3])
-                BOTy1 = 100 * (camInTagFrame[2][3])
-                print("Robot X,Z coords in Tag Frame ", BOTx1, BOTy1)
+                # show Robot X,Z coords in Rotated Tag Frame  (for -90 deg rotated Tag, swap x, y for -y, x)
+                # BOTx1 = 100 * (RotCamInTagFrame[0][3])    ### non-rodated tag
+                # BOTy1 = 100 * (RotCamInTagFrame[2][3])    ### non-rodated tag
+                BOTy1 = -100 * (RotCamInTagFrame[0][3])
+                BOTx1 = 100 * (RotCamInTagFrame[2][3])
+                print("Robot X,Z coords in Rotated Tag Frame (RotCamInTagFrame) ", BOTx1, BOTy1)
                 print("")
                 
                 # calculate and print Robot heading (Z) Euler angle from Y axis rotation
@@ -380,13 +412,14 @@ while (True):
             mL.on_for_degrees(speed=7, degrees=CamZxDeg * -4.5)
             time.sleep(1)
 
-        ## compensate for noisy/error condition when bot/cam is on camInTagFrame x = 0
-        ## in other words, the bot is straight out in front of the tag
-        if (tagInCamFrame[0][0]) >= 0.99 and (tagInCamFrame[2][2]) >= 0.99:
-            BOTx1 = 100 * (tagInCamFrame[0][3])
+        ### Deprecated ?
+        # ## compensate for noisy/error condition when bot/cam is on camInTagFrame x = 0
+        # ## in other words, the bot is straight out in front of the tag
+        # if (tagInCamFrame[0][0]) >= 0.99 and (tagInCamFrame[2][2]) >= 0.99:
+        #     BOTx1 = 100 * (tagInCamFrame[0][3])
 
     
-        ### the imshow code below does not work in this context for reasone not yet known
+        ### the imshow code below does not work in this context for reasons not yet known
         # ## uncomment this section to show video frames (warning:slow)
         # cv2.imshow('gray', gray)
         # if cv2.waitKey(1) & 0xFF == ord('q'):
@@ -486,10 +519,13 @@ while (True):
 
         ## convert from robot frame coords to world frame
         # Apriltag world frame coords
-        wAprTag1x = 0
+        #wAprTag1x = 0
         #wAprTag1x = 69   # alternate tag location for testing
         #wAprTag1x = 148   # another alternate tag location for testing
-        wAprTag1y = 400
+        #wAprTag1y = 400
+
+        wAprTag1x = 127      # east wall-center, alternate tag location for testing
+        wAprTag1y = 137     # east wall-center, alternate tag location for testing
 
 
         # robot world frame coords using Apriltag ref

@@ -2,10 +2,10 @@
 # 
 
 ########  change log  ########
-# 1/24/2021 -   created from apriltag-101.py but added matrix math to invert the frame perspective
+# 1/24/2021     - created from apriltag-101.py but added matrix math to invert the frame perspective
 #               from camera->tag to tag->camera
 #
-# 1/31/2021 -   added section to convert and show Robot heading (Z) in Euler angle for rotation in Y axis
+# 1/31/2021     - added section to convert and show Robot heading (Z) in Euler angle for rotation in Y axis
 #
 
 ### 2/15/2021   - Added the below after capturing chessboard impages with the piCam and then running
@@ -20,6 +20,9 @@
 # pastable into Python:
 #   fx, fy, cx, cy = (604.8851295863385, 606.0410127799453, 320.0, 240.0)
 
+
+# 3/13/2021     - added section to rotate tag to align with world frome coords
+#
 
 '''
 initial content from site: https://www.instructables.com/id/Automatic-Vision-Object-Tracking/
@@ -42,8 +45,25 @@ result = []
 
 tagInCamFrame = np.array([[],[],[],[]], dtype=np.int32)
 camInTagFrame = np.array([[],[],[],[]], dtype=np.int32)
+RotTagInCamFrame = np.array([[],[],[],[]], dtype=np.int32)
+RotCamInTagFrame = np.array([[],[],[],[]], dtype=np.int32)
 
 cap = cv2.VideoCapture(0)
+
+def Ry(theta):
+  return np.matrix([[ math.cos(theta), 0, math.sin(theta), 0],
+                   [ 0           , 1, 0, 0           ],
+                   [-math.sin(theta), 0, math.cos(theta), 0],
+                   [0, 0, 0, 1]])
+
+# theta = math.pi/4   # 45 degrees ccw
+
+# theta = 1.570796      #   90 degrees
+theta = -1.570796     #  -90 degrees
+# theta = 3.141592      #  180 degrees
+
+R = Ry(theta)
+
  
 while(True):
     result = [] # clear list
@@ -95,20 +115,30 @@ while(True):
             if j == 0:
                 tagInCamFrame = emum_result_pose
 
+        # Rotate the frame perspective via matrix rotation
+        RotTagInCamFrame = R * tagInCamFrame
+        
         # Invert the frame perspective via matrix inversion
         # the x,y,z R and T vectors in this view show the camera/robot location relative to the tag
         camInTagFrame = np.linalg.inv(tagInCamFrame)
+        RotCamInTagFrame = np.linalg.inv(RotTagInCamFrame)
 
         # os.system("clear")
         print("")
         print("apriltag standard (tagInCamFrame) pose dector result is... ")
         print(np.matrix(tagInCamFrame))
         print("")
+        print("Rotated tagInCamFrame pose dector result is... ")
+        print(np.matrix(RotTagInCamFrame))
+        print("")
         
         # print camInTagFrame
         print("")
         print("inverted (camInTagFrame) pose dector result is... ")
         print(np.matrix(camInTagFrame))
+        print("")
+        print("inverted (RotCamInTagFrame) pose dector result is... ")
+        print(np.matrix(RotCamInTagFrame))
         print("")
 
         # calculate and print Robot heading (Z) Euler angle from Y axis rotation
