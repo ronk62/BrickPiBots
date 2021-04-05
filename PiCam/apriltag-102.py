@@ -21,7 +21,7 @@
 #   fx, fy, cx, cy = (604.8851295863385, 606.0410127799453, 320.0, 240.0)
 
 
-# 3/13/2021     - added section to rotate tag to align with world frome coords
+# 3/13/2021     - added section to rotate tag to align with world frame coords
 #
 
 '''
@@ -29,6 +29,10 @@ initial content from site: https://www.instructables.com/id/Automatic-Vision-Obj
 
 Added apriltag processing, based on https://github.com/AprilRobotics/apriltag/wiki/AprilTag-User-Guide#pose-estimation
 and https://github.com/swatbotics/apriltag
+
+ref material for "rotate tag to align with world frame coords"
+https://www.meccanismocomplesso.org/en/3d-rotations-and-euler-angles-in-python/
+
 
 '''
 
