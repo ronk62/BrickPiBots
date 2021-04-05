@@ -78,7 +78,9 @@ def Ry(theta):
 
 # theta = math.pi/4   # 45 degrees ccw
 
-theta = -0.279253     # -16 degrees
+theta = math.pi/2   # 90 degrees ccw
+
+# theta = -0.279253     # -16 degrees
 
 R = Ry(theta)
 
