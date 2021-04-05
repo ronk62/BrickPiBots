@@ -18,7 +18,7 @@
 #                             cy = 240.0
 #                             pastable into Python:
 #                             fx, fy, cx, cy = (604.8851295863385, 606.0410127799453, 320.0, 240.0)
-# 3/13/2021                 - added sections that rotate tag to align with world frome coords and calculate
+# 3/13/2021                 - added sections that rotate tag to align with world frame coords and calculate
 #                             the cam/bot x,y location based on this
 
 
