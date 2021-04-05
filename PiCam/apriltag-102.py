@@ -108,7 +108,7 @@ H1 = [[1,0,0,5],
 [0,0,0,1]]
 
 # Assign Eurler rotation angles
-theta1Deg=90  # rotation angle between H0 and H1
+theta1Deg=90  # y rotation angle between H0 and H1 (positice values is cw, view top down in real world)
 
 # convert angles from deg to radians
 theta1Rad=math.radians(theta1Deg)
@@ -128,13 +128,22 @@ R0_1 = [[np.cos(theta1Rad),0,np.sin(theta1Rad)],
 # Apply the displacement translations
 d0_1 = [[ax1],[0],[az1]]
 
+# # setup vars to graph the unit vectors
+# # V0 location and rotation
+# x0 = H0[0][3]
+# y0 = H0[2][3]
+# vxx0 = [x0,x0 + H0[0][0]]
+# vxy0 = [y0,y0 + H0[2][0]]
+# vyx0 = [x0,x0 + H0[2][0]]
+# vyy0 = [y0,y0 + H0[2][2]]
+
 # setup vars to graph the unit vectors
 # V0 location and rotation
 x0 = H0[0][3]
 y0 = H0[2][3]
 vxx0 = [x0,x0 + H0[0][0]]
 vxy0 = [y0,y0 + H0[2][0]]
-vyx0 = [x0,x0 + H0[2][0]]
+vyx0 = [x0,x0 + H0[0][2]]
 vyy0 = [y0,y0 + H0[2][2]]
 
 print()
@@ -152,44 +161,25 @@ print("H0_1 is  ")
 print(np.matrix(H0_1))
 print()
 
+# # extract the values from H0_1 for graphing
+# x1 = H0_1[0][3]
+# y1 = H0_1[2][3]
+# vxx1 = [x1,x1 + H0_1[0][0]]
+# vxy1 = [y1,y1 + H0_1[2][0]]
+# vyx1 = [x1,x1 + H0_1[2][0]]
+# vyy1 = [y1,y1 + H0_1[2][2]]
+
 # extract the values from H0_1 for graphing
 x1 = H0_1[0][3]
 y1 = H0_1[2][3]
 vxx1 = [x1,x1 + H0_1[0][0]]
 vxy1 = [y1,y1 + H0_1[2][0]]
-vyx1 = [x1,x1 + H0_1[2][0]]
+vyx1 = [x1,x1 + H0_1[0][2]]
 vyy1 = [y1,y1 + H0_1[2][2]]
 
 print()
 print("the x,y position of H0_1 is  ", x1,y1)
 print()
-
-
-## graph the unit vectors
-fig, ax = plt.subplots()
-
-plt.scatter(x0,y0, label='v0 origin', color='r', s=25, marker="o")
-line1, = ax.plot(vxx0,vxy0, label='v0 x', lw=0.4, color='r', marker=">")
-line2, = ax.plot(vyx0,vyy0, label='v0 y', lw=0.4, color='b', marker="^")
-
-plt.scatter(x1,y1, label='v1 origin', color='y', s=25, marker="o")
-line3, = ax.plot(vxx1,vxy1, label='v1 x', lw=0.4, color='y', marker="None")
-line4, = ax.plot(vyx1,vyy1, label='v1 y', lw=0.4, color='c', marker="None")
-
-# plt.scatter(x2,y2, label='v2 origin', color='m', s=25, marker="o")
-# line5, = ax.plot(vxx2,vxy2, label='v2 x', lw=0.4, color='m', marker="None")
-# line6, = ax.plot(vyx2,vyy2, label='v2 y', lw=0.4, color='g', marker="None")
-
-plt.axis('equal')
-plt.xlabel('x-position')
-plt.ylabel('y-position')
-plt.title('unit vectors')
-plt.legend()
-plt.show()
-
-print()
-
-
 
 result = []
 
@@ -274,6 +264,26 @@ while(True):
         print(np.matrix(H0_2))
         print("")
 
+        # # extract the values from H0_2 for graphing
+        # x2 = H0_2[0][3]
+        # y2 = H0_2[2][3]
+        # vxx2 = [x2,x2 + H0_2[0][0]]
+        # vxy2 = [y2,y2 + H0_2[2][0]]
+        # vyx2 = [x2,x2 + H0_2[2][0]]
+        # vyy2 = [y2,y2 + H0_2[2][2]]
+
+        # extract the values from H0_2 for graphing
+        x2 = H0_2[0][3]
+        y2 = H0_2[2][3]
+        vxx2 = [x2,x2 + H0_2[0][0]]
+        vxy2 = [y2,y2 + H0_2[2][0]]
+        vyx2 = [x2,x2 + H0_2[0][2]]
+        vyy2 = [y2,y2 + H0_2[2][2]]
+
+        print()
+        print("the x,y position of H0_2 is  ", x2,y2)
+        print()
+
         # calculate and print Robot heading (Z) Euler angle from Y axis rotation
         # column 3, row 1
         print("")
@@ -283,6 +293,32 @@ while(True):
         print(ZxDeg, "  degrees")
         print("")
         print("Loop time = ", time.time() - tic)
+
+
+        ## graph the unit vectors
+        fig, ax = plt.subplots()
+
+        plt.scatter(x0,y0, label='base frame (v0) origin', color='r', s=25, marker="o")
+        line1, = ax.plot(vxx0,vxy0, label='v0 x', lw=0.4, color='r', marker=">")
+        line2, = ax.plot(vyx0,vyy0, label='v0 y', lw=0.4, color='b', marker="^")
+
+        plt.scatter(x1,y1, label='apriltag (v1) origin', color='y', s=25, marker="o")
+        line3, = ax.plot(vxx1,vxy1, label='v1 x', lw=0.4, color='y', marker="None")
+        line4, = ax.plot(vyx1,vyy1, label='v1 y', lw=0.4, color='c', marker="None")
+
+        plt.scatter(x2,y2, label='cam/bot (v2) origin', color='m', s=25, marker="o")
+        line5, = ax.plot(vxx2,vxy2, label='v2 x', lw=0.4, color='m', marker="None")
+        line6, = ax.plot(vyx2,vyy2, label='v2 y', lw=0.4, color='g', marker="None")
+
+        plt.axis('equal')
+        plt.xlabel('x-position')
+        plt.ylabel('Z-position')
+        plt.title('unit vectors')
+        plt.legend()
+        plt.show()
+
+        print()
+
 
 
     
