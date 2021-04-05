@@ -98,10 +98,10 @@ d0_1 = [[ax1],[ay1],[0]]
 # V0 location and rotation
 x0 = H0[0][3]
 y0 = H0[1][3]
-vxx0 = [x0,x0 + R0[0][0]]
-vxy0 = [y0,y0 + R0[1][0]]
-vyx0 = [x0,x0 + R0[0][1]]
-vyy0 = [y0,y0 + R0[1][1]]
+vxx0 = [x0,x0 + H0[0][0]]
+vxy0 = [y0,y0 + H0[1][0]]
+vyx0 = [x0,x0 + H0[0][1]]
+vyy0 = [y0,y0 + H0[1][1]]
 
 print()
 print("the x,y position of H0 is  ", x0,y0)
