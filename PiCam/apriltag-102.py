@@ -102,9 +102,9 @@ H0 = [[1,0,0,0],
 
 
 # H1 displaced from origin with no rotation - for ref only
-H1 = [[1,0,0,5],
-[0,1,0,5],
-[0,0,1,0],
+H1 = [[1,0,0,0.05],
+[0,1,0,0],
+[0,0,1,0.05],
 [0,0,0,1]]
 
 # Assign Eurler rotation angles
@@ -114,8 +114,8 @@ theta1Deg=90  # y rotation angle between H0 and H1 (positice values is cw, view 
 theta1Rad=math.radians(theta1Deg)
 
 # Assign displacement values
-ax1=0.05    # x displacement between H0 and H1 in meters
-az1=0.05    # z displacement between H0 and H1 in meters
+ax1=0      # x displacement between H0 and H1 in meters
+az1=2.5    # z displacement between H0 and H1 in meters
 
 
 ### Define the rotation
@@ -127,15 +127,6 @@ R0_1 = [[np.cos(theta1Rad),0,np.sin(theta1Rad)],
 
 # Apply the displacement translations
 d0_1 = [[ax1],[0],[az1]]
-
-# # setup vars to graph the unit vectors
-# # V0 location and rotation
-# x0 = H0[0][3]
-# y0 = H0[2][3]
-# vxx0 = [x0,x0 + H0[0][0]]
-# vxy0 = [y0,y0 + H0[2][0]]
-# vyx0 = [x0,x0 + H0[2][0]]
-# vyy0 = [y0,y0 + H0[2][2]]
 
 # setup vars to graph the unit vectors
 # V0 location and rotation
@@ -160,14 +151,6 @@ print()
 print("H0_1 is  ")
 print(np.matrix(H0_1))
 print()
-
-# # extract the values from H0_1 for graphing
-# x1 = H0_1[0][3]
-# y1 = H0_1[2][3]
-# vxx1 = [x1,x1 + H0_1[0][0]]
-# vxy1 = [y1,y1 + H0_1[2][0]]
-# vyx1 = [x1,x1 + H0_1[2][0]]
-# vyy1 = [y1,y1 + H0_1[2][2]]
 
 # extract the values from H0_1 for graphing
 x1 = H0_1[0][3]
@@ -263,14 +246,6 @@ while(True):
         print("cam/bot in base frame (H0_2) pose is... ")
         print(np.matrix(H0_2))
         print("")
-
-        # # extract the values from H0_2 for graphing
-        # x2 = H0_2[0][3]
-        # y2 = H0_2[2][3]
-        # vxx2 = [x2,x2 + H0_2[0][0]]
-        # vxy2 = [y2,y2 + H0_2[2][0]]
-        # vyx2 = [x2,x2 + H0_2[2][0]]
-        # vyy2 = [y2,y2 + H0_2[2][2]]
 
         # extract the values from H0_2 for graphing
         x2 = H0_2[0][3]
