@@ -108,14 +108,14 @@ H1 = [[1,0,0,0.05],
 [0,0,0,1]]
 
 # Assign Eurler rotation angles
-theta1Deg=-90  # y rotation angle between H0 and H1 (positive values are cw when viewed top down in real world)
+theta1Deg=0  # y rotation angle between H0 and H1 (positive values are cw when viewed top down in real world)
 
 # convert angles from deg to radians
 theta1Rad=math.radians(theta1Deg)
 
 # Assign displacement values
-ax1=-2.50     # x displacement between H0 and H1 in meters
-az1=-1.00     # z displacement between H0 and H1 in meters
+ax1=0     # x displacement between H0 and H1 in meters
+az1=0     # z displacement between H0 and H1 in meters
 
 
 ### Define the rotation
