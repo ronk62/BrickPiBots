@@ -44,8 +44,10 @@ cap = cv2.VideoCapture(0)
 # setup for live graphing
 style.use('fivethirtyeight')
 fig = plt.figure()
-ax1 = fig.add_subplot(2,1,1)
-ax2 = fig.add_subplot(2,1,2)
+ax1 = fig.add_subplot(4,1,1)
+ax2 = fig.add_subplot(4,1,2)
+ax3 = fig.add_subplot(4,1,3)
+ax4 = fig.add_subplot(4,1,4)
 
 
 def animate(i):
@@ -120,21 +122,27 @@ def animate(i):
     ax1.plot(ODt, Xx, label='Xx')
     ax1.plot(ODt, Xy, label='Xy')
     ax1.plot(ODt, Xz, label='Xz')
-    ax1.plot(ODt, Yx, label='Yx')
-    ax1.plot(ODt, Yy, label='Yy')
-    ax1.plot(ODt, Yz, label='Yz')
-    ax1.plot(ODt, Zx, label='Zx')
-    ax1.plot(ODt, Zy, label='Zy')
-    ax1.plot(ODt, Zz, label='Zz')
-    
     ax1.legend()
 
     ax2.clear()
-    ax2.plot(ODt, Xt, label='Xt')
-    ax2.plot(ODt, Yt, label='Yt')
-    ax2.plot(ODt, Zt, label='Zt')
-    
+    # ax2.plot(ODt, USr)
+    ax2.plot(ODt, Yx, label='Yx')
+    ax2.plot(ODt, Yy, label='Yy')
+    ax2.plot(ODt, Yz, label='Yz')    
     ax2.legend()
+
+    ax3.clear()
+    # ax3.plot(ODt, USr)
+    ax3.plot(ODt, Zx, label='Zx')
+    ax3.plot(ODt, Zy, label='Zy')
+    ax3.plot(ODt, Zz, label='Zz')    
+    ax3.legend()
+
+    ax4.clear()
+    ax4.plot(ODt, Xt, label='Xt')
+    ax4.plot(ODt, Yt, label='Yt')
+    ax4.plot(ODt, Zt, label='Zt')
+    ax4.legend()
 
 ### main ###
 while(True):
