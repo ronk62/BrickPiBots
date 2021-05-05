@@ -193,35 +193,7 @@ def animate(i):
 
     ### Plot the data
 
-    ## Uncomment this next section for raw data
-    ax1.clear()
-    # ax1.plot(ODt, USr)
-    ax1.plot(ODt, Xx, label='Xx')
-    ax1.plot(ODt, Xy, label='Xy')
-    ax1.plot(ODt, Xz, label='Xz')
-    ax1.legend()
-
-    ax2.clear()
-    # ax2.plot(ODt, USr)
-    ax2.plot(ODt, Yx, label='Yx')
-    ax2.plot(ODt, Yy, label='Yy')
-    ax2.plot(ODt, Yz, label='Yz')    
-    ax2.legend()
-
-    ax3.clear()
-    # ax3.plot(ODt, USr)
-    ax3.plot(ODt, Zx, label='Zx')
-    ax3.plot(ODt, Zy, label='Zy')
-    ax3.plot(ODt, Zz, label='Zz')    
-    ax3.legend()
-
-    ax4.clear()
-    ax4.plot(ODt, Xt, label='Xt')
-    ax4.plot(ODt, Yt, label='Yt')
-    ax4.plot(ODt, Zt, label='Zt')
-    ax4.legend()
-
-    ## Uncomment this next section for stats data
+    # # Uncomment this next section for raw data
     # ax1.clear()
     # # ax1.plot(ODt, USr)
     # ax1.plot(ODt, Xx, label='Xx')
@@ -248,6 +220,31 @@ def animate(i):
     # ax4.plot(ODt, Yt, label='Yt')
     # ax4.plot(ODt, Zt, label='Zt')
     # ax4.legend()
+
+    # Uncomment this next section for stats data
+    ax1.clear()
+    ax1.plot(ODtStats, ZxMin, label='ZxMin')
+    ax1.plot(ODtStats, ZxMax, label='ZxMax')
+    ax1.plot(ODtStats, ZxMean, label='ZxMean')
+    ax1.legend()
+
+    ax2.clear()
+    ax2.plot(ODtStats, XtMin, label='XtMin')
+    ax2.plot(ODtStats, XtMax, label='XtMax')
+    ax2.plot(ODtStats, XtMean, label='XtMean')    
+    ax2.legend()
+
+    ax3.clear()
+    ax3.plot(ODtStats, ZtMin, label='ZtMin')
+    ax3.plot(ODtStats, ZtMax, label='ZtMax')
+    ax3.plot(ODtStats, ZtMean, label='ZtMean')    
+    ax3.legend()
+
+    ax4.clear()
+    ax4.plot(ODtStats, ZxStd, label='ZxStd')
+    ax4.plot(ODtStats, XtStd, label='XtStd')
+    ax4.plot(ODtStats, ZtStd, label='ZtStd')
+    ax4.legend()
 
 
 ### main ###
