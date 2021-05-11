@@ -3,7 +3,7 @@
 # uses ev3dev2-based code
 #
 # Date          Author      Change Notes
-# 4/15/2020     Ron King    initial dev
+# 5/10/2021     Ron King    initial dev
 
 # ref. https://github.com/ev3dev/ev3dev-lang-python-demo/blob/stretch/platform/brickpi3-motor-and-sensor.py
 
