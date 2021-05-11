@@ -6,42 +6,44 @@
 # 4/15/2020     Ron King    initial dev
 # 4/18/2020     Ron King    alter to use INPUT_2
 
-""" Future feature - Relative Heading
----------------------------------
 
-The below is taken from an NXC program, "C:\Users\ronk6\Documents\NXCprograms\CMPSpivotZeroXing6.nxc"
+# Future feature - Relative Heading
+# ---------------------------------
 
-// calculate relative heading and use Proportional correction to pivot
-// towards target heading..."relative_heading" is equal to the angle
-// difference between "target_heading" and current compass heading
-    while (abs(target_heading - Compass_val) > 1){
-     if (target_heading - Compass_val < -179){
-        relative_heading = target_heading - Compass_val + 360;
-     }
-     else{
-        relative_heading = target_heading - Compass_val;
-     }
-// calculate pivot direction, always taking shortest CW or CCW path
-     if (relative_heading < 0){
-        steer = -100;
-     }
-     else{
-        steer = 100;
-     }
-// set pwr for use in OnFwdSync
-     pwr = abs(relative_heading);
-// limit min/max pwr (to prevent stalls and whirling dervish spins)
-     if (pwr > 35)
-     {
-        pwr=35;
-     }
-          if (pwr < 15)
-     {
-        pwr=15;
-     }
-// do the needful (make the pivot turn)
-     OnFwdSync(OUT_BC, pwr, steer);
-    } """
+# The below is taken from an NXC program, "C:\Users\ronk6\Documents\NXCprograms\CMPSpivotZeroXing6.nxc"
+
+# // calculate relative heading and use Proportional correction to pivot
+# // towards target heading..."relative_heading" is equal to the angle
+# // difference between "target_heading" and current compass heading
+#     while (abs(target_heading - Compass_val) > 1){
+#      if (target_heading - Compass_val < -179){
+#         relative_heading = target_heading - Compass_val + 360;
+#      }
+#      else{
+#         relative_heading = target_heading - Compass_val;
+#      }
+# // calculate pivot direction, always taking shortest CW or CCW path
+#      if (relative_heading < 0){
+#         steer = -100;
+#      }
+#      else{
+#         steer = 100;
+#      }
+# // set pwr for use in OnFwdSync
+#      pwr = abs(relative_heading);
+# // limit min/max pwr (to prevent stalls and whirling dervish spins)
+#      if (pwr > 35)
+#      {
+#         pwr=35;
+#      }
+#           if (pwr < 15)
+#      {
+#         pwr=15;
+#      }
+# // do the needful (make the pivot turn)
+#      OnFwdSync(OUT_BC, pwr, steer);
+#     } 
+#
 
 # ref. https://github.com/ev3dev/ev3dev-lang-python-demo/blob/stretch/platform/brickpi3-motor-and-sensor.py
 
