@@ -27,6 +27,9 @@
 # 4/5/2021      - major updates to correct the approach for rotating the tag to align with world frame coords
 #
 
+# 5/28/2021     - typo correction and some clarifications/notes
+#
+
 '''
 initial content from site: https://www.instructables.com/id/Automatic-Vision-Object-Tracking/
 
@@ -54,7 +57,7 @@ ref. https://www.youtube.com/watch?v=fXewWpehAWw&list=PLT_0lwItn0sDBE98BsbaZezfl
 Notations and code outline
 --------------------------
 H0 represents the base frame itself (with or without a displacement offset)
-H1 represente the Apriltag
+H1 represents the Apriltag
 H2 represents the cam/bot
 
 H1 is constructed from intuition due to initial condition simplicity and is for ref only
@@ -101,11 +104,11 @@ H0 = [[1,0,0,0],
 # [0,0,0,1]]
 
 
-# H1 displaced from origin with no rotation - for ref only
-H1 = [[1,0,0,0.05],
-[0,1,0,0],
-[0,0,1,0.05],
-[0,0,0,1]]
+# # H1 displaced from origin with no rotation - not used...for ref only
+# H1 = [[1,0,0,0.05],
+# [0,1,0,0],
+# [0,0,1,0.05],
+# [0,0,0,1]]
 
 # Assign Eurler rotation angles
 theta1Deg=-45  # y rotation angle between H0 and H1 (positive values are cw when viewed top down in real world)
