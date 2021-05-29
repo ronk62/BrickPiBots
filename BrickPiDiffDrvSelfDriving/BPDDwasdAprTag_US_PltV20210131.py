@@ -20,10 +20,12 @@
 #                             fx, fy, cx, cy = (604.8851295863385, 606.0410127799453, 320.0, 240.0)
 # 3/13/2021                 - added sections that rotate tag to align with world frame coords and calculate
 #                             the cam/bot x,y location based on this
-
+# 5/28/2021                 - rewrite for sections that calculate cam/bot x,y location world frame coords; taking code
+#                             segments and learnings from /home/robot/ev3dev2Projects/PiCam/apriltag-102.py
 
 
 #                           - DON'T Forget to start xming and export DISPLAY=10.0.0.9:0.0  (change IP addr as req'd)
+
 
 """ 
 This program provides SLAM testing with wasd keyboard remote control and data collection.
@@ -33,7 +35,42 @@ Motors
 motor A = Left motor
 motor B = Right motor
 
- """
+##############################################################
+ref material for "rotate tag to align with world frame coords"
+https://www.meccanismocomplesso.org/en/3d-rotations-and-euler-angles-in-python/
+
+"Robotics 1 U1 (Kinematics) S5 (Homogeneous Transformation Matrix) P1 (HTM from Rotation Matrix)"
+
+The main difference in the analysis is that Kinematics assumes a linkage between the
+frames, while localization assumes tags placed in the base frame at a location and
+rotation that is not rigidly linked to the base-frame. Likewise, the cam/bot is not rigidly
+linked to the tags.
+
+The result is that...
+1) the relative tag rotation angles are not used for displacement calculations
+2) the rotations and x,y displacements for tags are measured and entered as known data
+3) the cam/bot matrix data comes from the processed vid capture and apriltag lib
+
+ref. https://www.youtube.com/watch?v=fXewWpehAWw&list=PLT_0lwItn0sDBE98BsbaZezflB96ws12b&index=17
+
+
+Notations and code outline
+--------------------------
+H0 represents the base frame itself (with or without a displacement offset)
+H1 represents the Apriltag
+H2 represents the cam/bot
+
+H1 is constructed from intuition due to initial condition simplicity and is for ref only
+
+H0_1 is initially composed from R0_1 and d0_1 components using np.concatinate...
+...then computed as the dot.product of H0 and H0_1
+
+R0_1 and d0_1 are composed from angles, displacement values, and formulas
+
+H0_2 is the cam/bot in the base frame and is the dot.product of H0_1 and the camInTagFrame
+
+
+"""
 
 import time, os, tty, sys, threading
 import matplotlib.pyplot as plt
@@ -128,8 +165,6 @@ ir.mode = 'IR-SEEK'
 # initialize PiCam, vars, arrays for image capture
 tagInCamFrame = np.array([[],[],[],[]], dtype=np.int32)
 camInTagFrame = np.array([[],[],[],[]], dtype=np.int32)
-RotTagInCamFrame = np.array([[],[],[],[]], dtype=np.int32)
-RotCamInTagFrame = np.array([[],[],[],[]], dtype=np.int32)
 CamZxDeg = 180
 cap = cv2.VideoCapture(0)
 detector = apriltag.Detector()
@@ -180,19 +215,96 @@ mR.position = 0
 spd = 0        # set this value to -30 to +90; use to set outer wheel/motor speed; default to mL for driving straight
 turnRatio = 0.0  # set this value to -0.5 to +0.5; subtract from 1 to set turn ratio; multiply * spd to set inside motor speed
 
-def Ry(theta):
-    return np.matrix([[ math.cos(theta), 0, math.sin(theta), 0],
-                   [ 0           , 1, 0, 0           ],
-                   [-math.sin(theta), 0, math.cos(theta), 0],
-                   [0, 0, 0, 1]])
+#np.set_printoptions(precision=2,floatmode='fixed')
+np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
-# theta = math.pi/4   # 45 degrees ccw
+# vars for rotation matrices and calculations
+R0_1 = np.array([], dtype=np.int32)
+d0_1 = np.array([], dtype=np.int32)
 
-# theta = 1.570796      #   90 degrees
-theta = -1.570796     #  -90 degrees
-# theta = 3.141592      #  180 degrees
+H0 = np.array([], dtype=np.int32)
+H1 = np.array([], dtype=np.int32)
+H0_1 = np.array([], dtype=np.int32)
+H0_2 = np.array([], dtype=np.int32)
 
-R = Ry(theta)
+# H0 at origin
+H0 = [[1,0,0,0],
+[0,1,0,0],
+[0,0,1,0],
+[0,0,0,1]]
+
+# # H0 NOT at origin
+# H0 = [[1,0,0,0],
+# [0,1,0,400],
+# [0,0,1,0],
+# [0,0,0,1]]
+
+
+# # H1 displaced from origin with no rotation - not used...for ref only
+# H1 = [[1,0,0,0.05],
+# [0,1,0,0],
+# [0,0,1,0.05],
+# [0,0,0,1]]
+
+# Assign Eurler rotation angles
+theta1Deg=90  # y rotation angle between H0 and H1 (positive values are cw when viewed top down in real world)
+
+# convert angles from deg to radians
+theta1Rad=math.radians(theta1Deg)
+
+# Assign displacement values
+ax1=2     # x displacement between H0 and H1 in meters
+az1=0.40     # z displacement between H0 and H1 in meters
+wAprTag1x = ax1 * 100     # scaling for graphs
+wAprTag1y = az1 * 100     # scaling for graphs
+
+### Define the rotation
+# R0_1
+R0_1 = [[np.cos(theta1Rad),0,np.sin(theta1Rad)],
+[0,1,0],
+[-np.sin(theta1Rad),0,np.cos(theta1Rad)]]
+
+
+# Apply the displacement translations
+d0_1 = [[ax1],[0],[az1]]
+
+# setup vars to graph the unit vectors
+# V0 location and rotation
+x0 = H0[0][3]
+y0 = H0[2][3]
+vxx0 = [x0,x0 + H0[0][0]]
+vxy0 = [y0,y0 + H0[2][0]]
+vyx0 = [x0,x0 + H0[0][2]]
+vyy0 = [y0,y0 + H0[2][2]]
+
+print()
+print("the x,y position of H0 is  ", x0,y0)
+print()
+
+
+H0_1 = np.concatenate((R0_1, d0_1), 1)
+H0_1 = np.concatenate((H0_1, [[0,0,0,1]]), 0)
+
+H0_1 = np.dot(H0, H0_1)
+
+print()
+print("H0_1 is  ")
+print(np.matrix(H0_1))
+print()
+
+# extract the values from H0_1 for graphing
+x1 = H0_1[0][3]
+y1 = H0_1[2][3]
+vxx1 = [x1,x1 + H0_1[0][0]]
+vxy1 = [y1,y1 + H0_1[2][0]]
+vyx1 = [x1,x1 + H0_1[0][2]]
+vyy1 = [y1,y1 + H0_1[2][2]]
+
+print()
+print("the x,y position of H0_1 is  ", x1,y1)
+print()
+
+result = []
 
 
 def keyboardInput(name):
@@ -347,28 +459,14 @@ while (True):
                     if j == 0:
                         tagInCamFrame = emum_result_pose
 
-                # Rotate the frame perspective via matrix rotation
-                RotTagInCamFrame = R * tagInCamFrame
-                RotTagInCamFrame = np.asarray(RotTagInCamFrame)
-                
                 # Invert the frame perspective via matrix inversion
                 # the x,y,z R and T vectors in this view show the camera/robot location relative to the tag
                 camInTagFrame = np.linalg.inv(tagInCamFrame)
-                RotCamInTagFrame = np.linalg.inv(RotTagInCamFrame)
 
-                ###os.system("clear")
+                # os.system("clear")
                 print("")
                 print("apriltag standard (tagInCamFrame) pose dector result is... ")
                 print(np.matrix(tagInCamFrame))
-                print("")
-                print("Rotated tagInCamFrame pose dector result is... ")
-                print(np.matrix(RotTagInCamFrame))
-                print("")
-
-                # show Tag X,Z coords in Cam/Robot Frame
-                AprTagy1 = -100 * (tagInCamFrame[0][3])
-                AprTagx1 = -100 * (tagInCamFrame[2][3])
-                print("Tag X,Z coords in Robot Frame ", AprTagx1, AprTagy1)
                 print("")
                 
                 # print camInTagFrame
@@ -376,16 +474,33 @@ while (True):
                 print("inverted (camInTagFrame) pose dector result is... ")
                 print(np.matrix(camInTagFrame))
                 print("")
-                print("inverted (RotCamInTagFrame) pose dector result is... ")
-                print(np.matrix(RotCamInTagFrame))
+
+                # calculate and print cam/bot in base frame
+                H0_2 = np.dot(H0_1, camInTagFrame)
+
+                print("")
+                print("cam/bot in base frame (H0_2) pose is... ")
+                print(np.matrix(H0_2))
                 print("")
 
-                # show Robot X,Z coords in Rotated Tag Frame  (for -90 deg rotated Tag, swap x, y for -y, x)
-                # BOTx1 = 100 * (RotCamInTagFrame[0][3])    ### non-rodated tag
-                # BOTy1 = 100 * (RotCamInTagFrame[2][3])    ### non-rodated tag
-                BOTy1 = -100 * (RotCamInTagFrame[0][3])
-                BOTx1 = 100 * (RotCamInTagFrame[2][3])
-                print("Robot X,Z coords in Rotated Tag Frame (RotCamInTagFrame) ", BOTx1, BOTy1)
+                # extract the values for AprTag in Bot frame graphing
+                AprTagx1 = tagInCamFrame[0][3]
+                AprTagy1 = tagInCamFrame[2][3]                
+                
+                # extract the values from H0_2 for graphing
+                x2 = H0_2[0][3]
+                y2 = H0_2[2][3]
+                vxx2 = [x2,x2 + H0_2[0][0]]
+                vxy2 = [y2,y2 + H0_2[2][0]]
+                vyx2 = [x2,x2 + H0_2[0][2]]
+                vyy2 = [y2,y2 + H0_2[2][2]]
+
+                # robot world frame coords using Apriltag ref
+                wBOTx1 = x2 * 100
+                wBOTy1 = y2 * 100
+                print()
+                print("the robot world frame x,y position (H0_2) is  ", wBOTx1,wBOTy1)
+                print()
                 print("")
                 
                 # calculate and print Robot heading (Z) Euler angle from Y axis rotation
@@ -412,21 +527,7 @@ while (True):
             mL.on_for_degrees(speed=7, degrees=CamZxDeg * -4.5)
             time.sleep(1)
 
-        ### Deprecated ?
-        # ## compensate for noisy/error condition when bot/cam is on camInTagFrame x = 0
-        # ## in other words, the bot is straight out in front of the tag
-        # if (tagInCamFrame[0][0]) >= 0.99 and (tagInCamFrame[2][2]) >= 0.99:
-        #     BOTx1 = 100 * (tagInCamFrame[0][3])
-
-    
-        ### the imshow code below does not work in this context for reasons not yet known
-        # ## uncomment this section to show video frames (warning:slow)
-        # cv2.imshow('gray', gray)
-        # if cv2.waitKey(1) & 0xFF == ord('q'):
-        #     break
-        # # print msg and sleep/pause for a few seconds to view image
-        # print("Wait for image to display for a few seconds, then move on...")
-        # time.sleep(3)
+        
 
         cap.release()
         cv2.destroyAllWindows()
@@ -515,22 +616,6 @@ while (True):
         plt.title('Apriltag location in robot frame - relative position data V20210131')
         plt.legend()
         # plt.show()
-
-
-        ## convert from robot frame coords to world frame
-        # Apriltag world frame coords
-        #wAprTag1x = 0
-        #wAprTag1x = 69   # alternate tag location for testing
-        #wAprTag1x = 148   # another alternate tag location for testing
-        #wAprTag1y = 400
-
-        wAprTag1x = 127      # east wall-center, alternate tag location for testing
-        wAprTag1y = 137     # east wall-center, alternate tag location for testing
-
-
-        # robot world frame coords using Apriltag ref
-        wBOTx1 = wAprTag1x + BOTx1
-        wBOTy1 = wAprTag1y + BOTy1
 
 
         print("wAprTag1x, wAprTag1y (AprTag1 world frame location) = ", wAprTag1x, wAprTag1y)
