@@ -247,14 +247,14 @@ H0 = [[1,0,0,0],
 # [0,0,0,1]]
 
 # Assign Eurler rotation angles
-theta1Deg=90  # y rotation angle between H0 and H1 (positive values are cw when viewed top down in real world)
+theta1Deg=135  # y rotation angle between H0 and H1 (positive values are cw when viewed top down in real world)
 
 # convert angles from deg to radians
 theta1Rad=math.radians(theta1Deg)
 
 # Assign displacement values
-ax1=2     # x displacement between H0 and H1 in meters
-az1=0.40     # z displacement between H0 and H1 in meters
+ax1=0.9     # x displacement between H0 and H1 in meters
+az1=0       # z displacement between H0 and H1 in meters
 wAprTag1x = ax1 * 100     # scaling for graphs
 wAprTag1y = az1 * 100     # scaling for graphs
 
