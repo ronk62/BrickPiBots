@@ -22,7 +22,9 @@
 #                             the cam/bot x,y location based on this
 # 5/28/2021                 - rewrite for sections that calculate cam/bot x,y location world frame coords; taking code
 #                             segments and learnings from /home/robot/ev3dev2Projects/PiCam/apriltag-102.py
-
+# 5/31/2021                 - moved PiCam var init code to data capture section so that a series of Apriltag
+#                             capture cycles can occur w/out having to restart the program
+#
 
 #                           - DON'T Forget to start xming and export DISPLAY=10.0.0.9:0.0  (change IP addr as req'd)
 
@@ -163,10 +165,10 @@ ir.mode = 'IR-SEEK'
 #prev_ir1HeadVal = 0
 
 # initialize PiCam, vars, arrays for image capture
-tagInCamFrame = np.array([[],[],[],[]], dtype=np.int32)
-camInTagFrame = np.array([[],[],[],[]], dtype=np.int32)
-CamZxDeg = 180
-cap = cv2.VideoCapture(0)
+#tagInCamFrame = np.array([[],[],[],[]], dtype=np.int32)    ## moved to data sample capture section
+#camInTagFrame = np.array([[],[],[],[]], dtype=np.int32)    ## moved to data sample capture section
+#CamZxDeg = 180                                             ## moved to data sample capture section
+#cap = cv2.VideoCapture(0)                                  ## moved to data sample capture section
 detector = apriltag.Detector()
 
 
@@ -379,6 +381,12 @@ while (True):
     # a 10 deg robot pivot turn = 45 motor ticks
 
     if sample_mode > 0:
+        # initialize PiCam, vars, arrays for image capture
+        tagInCamFrame = np.array([[],[],[],[]], dtype=np.int32)
+        camInTagFrame = np.array([[],[],[],[]], dtype=np.int32)
+        CamZxDeg = 180
+        cap = cv2.VideoCapture(0)
+        time.sleep(1)
         result = []
         n = 12   # limit how many times we rotate 30 degrees looking for a tag
         np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
