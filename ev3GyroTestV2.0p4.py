@@ -4,6 +4,9 @@
 #
 # Date          Author      Change Notes
 # 5/10/2021     Ron King    initial dev
+#
+# 5/31/2021     Ron King    - work-around for bogus intermittent readings of '0' (possibly a f/w bug in BrickPi3)
+#
 
 # ref. https://github.com/ev3dev/ev3dev-lang-python-demo/blob/stretch/platform/brickpi3-motor-and-sensor.py
 
@@ -58,12 +61,21 @@ gyro.mode = 'GYRO-ANG'
 gyroVal = 0
 prev_gyroVal = 0
 
+time.sleep(2)     # give some time to stabilize gyro before reading values
+
 startTime = time.time()
+
+badValCount = 0
 
 while (1):
     gyroVal = gyro.value(0)
+    # work-around for bogus intermittent readings of '0' (possibly a f/w bug in BrickPi3)
+    if gyroVal == 0 and abs(gyroVal - prev_gyroVal) > 1:
+        badValCount += 1
+        print("BAD gyroVal = ", gyroVal, "badValCount = ", badValCount, "  prev_gyroVal (good value) = ", prev_gyroVal)   # print for testing; comment for more 'normal' use
+        gyroVal = prev_gyroVal
     if gyroVal != prev_gyroVal:
         print("gyroVal = ", gyroVal)
         prev_gyroVal = gyroVal
-    time.sleep (0.05) # Give the CPU a rest
+    time.sleep (0.01) # Give the CPU a rest
 
