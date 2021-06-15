@@ -14,14 +14,14 @@ import time, tty, sys
 from ev3dev2 import list_devices
 from ev3dev2.port import LegoPort
 from ev3dev2.motor import OUTPUT_A, LargeMotor, SpeedPercent
-from ev3dev2.sensor import INPUT_4
+from ev3dev2.sensor import INPUT_1
 from ev3dev2.sensor.lego import GyroSensor
 
 
-p4 = LegoPort(INPUT_4)
+p1 = LegoPort(INPUT_1)
 
 # http://docs.ev3dev.org/projects/lego-linux-drivers/en/ev3dev-stretch/brickpi3.html#brickpi3-in-port-modes
-p4.mode = 'ev3-uart'
+p1.mode = 'ev3-uart'
 
 # allow for some time for mode to setup
 time.sleep(0.5)
@@ -40,13 +40,13 @@ dmesg -w
 """
 
 # set device name and i2c address (in hex)
-p4.set_device = 'lego-ev3-gyro'
+p1.set_device = 'lego-ev3-gyro'
 
 # allow for some time for setup
 time.sleep(0.5)
 
-# Connect sensor to sensor port 4
-gyro = GyroSensor(INPUT_4)
+# Connect sensor to sensor port 3
+gyro = GyroSensor(INPUT_1)
 
 # allow for some time to load the new drivers
 time.sleep(0.5)
