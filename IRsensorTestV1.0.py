@@ -4,70 +4,58 @@
 #
 # Date          Author      Change Notes
 # 3/22/2020     Ron King    initial dev
+# 6/14/2020     Ron King    changed to input port 3 with no time limit, IR-PROX mode only
+#                           added work-around for bogus intermittent readings of '0'
+#
 
 import time, tty, sys
 from ev3dev2 import list_devices
 from ev3dev2.port import LegoPort
 from ev3dev2.motor import OUTPUT_A, LargeMotor, SpeedPercent
-from ev3dev2.sensor import INPUT_1
+from ev3dev2.sensor import INPUT_3
 from ev3dev2.sensor.lego import InfraredSensor
 
-p1 = LegoPort(INPUT_1)
+p3 = LegoPort(INPUT_3)
 # http://docs.ev3dev.org/projects/lego-linux-drivers/en/ev3dev-stretch/brickpi3.html#brickpi3-in-port-modes
-p1.mode = 'ev3-uart'
+p3.mode = 'ev3-uart'
 # http://docs.ev3dev.org/projects/lego-linux-drivers/en/ev3dev-stretch/sensors.html#supported-sensors
-p1.set_device = 'lego-ev3-ir'
+p3.set_device = 'lego-ev3-ir'
 
 
 # Connect infrared to any sensor port
-ir = InfraredSensor(INPUT_1)
+ir = InfraredSensor(INPUT_3)
 
 # allow for some time to load the new drivers
 time.sleep(0.5)
 
-irProxVal = 0
+ir.mode = 'IR-PROX'
+irProxVal = 100
 prev_irProxVal = 0
-irDistVal = 0
-prev_irDistVal = 0
-irHeadVal = 0
-prev_irHeadVal = 0
 
+badValCount = 0
+
+print("")
+print("")
+
+startTime = time.time()
+
+print("startTime =  ", startTime)
 
 print("#######################################################################")
 print("################  starting in proximity mode  #########################")
 print("#######################################################################")
 
-startTime = time.time()
 
-while (time.time() - startTime < 15):
+while (1):
     irProxVal = ir.proximity
+
+    # work-around for bogus intermittent readings of '0' (possibly a f/w bug in BrickPi3)
+    if irProxVal == 0 and abs(irProxVal - prev_irProxVal) > 1:
+        badValCount += 1
+        print("BAD irProxVal = ", irProxVal, "badValCount = ", badValCount, "  prev_irProxVal (good value) = ", prev_irProxVal, "elapsed time = ",  time.time() - startTime)   # print for testing; comment for more 'normal' use
+        irProxVal = prev_irProxVal
+
     if irProxVal != prev_irProxVal:
         print("irProxVal = ", irProxVal)
         prev_irProxVal = irProxVal
     time.sleep (0.05) # Give the CPU a rest
-
-
-print("#######################################################################")
-print("#################  switching to seeker mode  ##########################")
-print("#######################################################################")
-
-startTime = time.time()
-
-irDistVal = 0
-prev_irDistVal = 0
-irHeadVal = 0
-prev_irHeadVal = 0
-
-
-while (time.time() - startTime < 99):
-    irDistVal = ir.distance()
-    irHeadVal = ir.heading()
-    if (irDistVal != prev_irDistVal) or (irHeadVal != prev_irHeadVal):
-            print("irDistVal, irHeadVal ", irDistVal, irHeadVal)
-            prev_irDistVal = irDistVal
-            prev_irHeadVal = irHeadVal
-    time.sleep (0.2) # Give the CPU a rest
-
-print("#######################################################################")
-print("####################   time's up - exiting    #########################")
-print("#######################################################################")
