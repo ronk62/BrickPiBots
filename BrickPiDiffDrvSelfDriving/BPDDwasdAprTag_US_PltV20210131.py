@@ -24,6 +24,7 @@
 #                             segments and learnings from /home/robot/ev3dev2Projects/PiCam/apriltag-102.py
 # 5/31/2021                 - moved PiCam var init code to data capture section so that a series of Apriltag
 #                             capture cycles can occur w/out having to restart the program
+# 6/14/2021                 - restored very basic IR-PROX mode (dist approx measurement, no beacons)
 #
 
 #                           - DON'T Forget to start xming and export DISPLAY=10.0.0.9:0.0  (change IP addr as req'd)
@@ -156,13 +157,16 @@ ir = InfraredSensor(INPUT_3)
 # allow for some time to load the new drivers
 time.sleep(0.5)
 
-ir.mode = 'IR-SEEK'
-#ir1ProxVal = 100
-#prev_ir1ProxVal = 0
+#ir.mode = 'IR-SEEK'
 #ir1DistVal = 0
 #prev_ir1DistVal = 0
 #ir1HeadVal = 0
 #prev_ir1HeadVal = 0
+
+ir.mode = 'IR-PROX'
+irProxVal = 100
+prev_irProxVal = 0
+
 
 # initialize PiCam, vars, arrays for image capture
 #tagInCamFrame = np.array([[],[],[],[]], dtype=np.int32)    ## moved to data sample capture section
@@ -326,12 +330,13 @@ if __name__ == "__main__":
 while (True):
     usDistCmVal = us.distance_centimeters
     compassVal = cmp.value(0)
-
-    if usDistCmVal != prev_usDistCmVal or compassVal != prev_compassVal:
+    irProxVal = ir.proximity
+    if usDistCmVal != prev_usDistCmVal or compassVal != prev_compassVal or irProxVal != prev_irProxVal:
         if printVerbose > 0:
-            print("usDistCmVal = ", int(usDistCmVal), "  compassVal = ", compassVal)  # print all sensor vals, regardless of which changed
+            print("usDistCmVal = ", int(usDistCmVal), "  compassVal = ", compassVal, "  irProxVal = ", irProxVal)  # print all sensor vals, regardless of which changed
         prev_usDistCmVal = usDistCmVal
         prev_compassVal = compassVal
+        prev_irProxVal = irProxVal
 
     ### halt if usDistCmVal < 5 
     if usDistCmVal < 5:    ### changed from '10' to '5' for US data accuracy testing
