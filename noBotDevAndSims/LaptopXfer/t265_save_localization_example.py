@@ -8,10 +8,11 @@
 #####################################################
 
 # First import the library
-#import pyrealsense2 as rs
-import pyrealsense2.pyrealsense2 as rs  # req'd for RPi3b and compiled installation
-
+import pyrealsense2 as rs
+import numpy as np
 import time
+
+lmap = np.array([], dtype=np.int32) # arrary to hold localization map for import/export
 
 # Declare RealSense pipeline, encapsulating the actual device and sensors
 pipe = rs.pipeline()
@@ -20,11 +21,33 @@ pipe = rs.pipeline()
 cfg = rs.config()
 cfg.enable_stream(rs.stream.pose)
 
+# setup device and pose_sensor
+device = cfg.resolve(pipe).get_device()
+pose_sensor = device.first_pose_sensor()
+
+# export localization map
+lmap = pose_sensor.export_localization_map()
+print("lmap = ", lmap)
+print("")
+
+# save lmap to csv file
+print ("saving exported localization map to csv file")
+np.savetxt('t265localiztionmap-1.csv', lmap, delimiter=',')
+print ("save commplete")
+print("")
+
+# # get static node
+# result, translation, rotation = pose_sensor.get_static_node("name")
+# print("result = ",result)
+# print("translation = ",translation)
+# print("rotation = ",rotation)
+# print("")
+
 # Start streaming with requested config
 pipe.start(cfg)
 
 try:
-    while(1):
+    for _ in range(50):
         # Wait for the next set of frames from the camera
         frames = pipe.wait_for_frames()
 
@@ -33,13 +56,13 @@ try:
         if pose:
             # Print some of the pose data to the terminal
             data = pose.get_pose_data()
-            # print("Frame #{}".format(pose.frame_number))
+            print("Frame #{}".format(pose.frame_number))
             print("Position: {}".format(data.translation))
-            trackerConfidence = data.tracker_confidence
-            print("pose trackerConfidence is ", trackerConfidence)
-            # print("Velocity: {}".format(data.velocity))
-            # print("Acceleration: {}\n".format(data.acceleration))
-        time.sleep(0.5)
+            print("Velocity: {}".format(data.velocity))
+            print("Acceleration: {}\n".format(data.acceleration))
+
+        time.sleep(1)
 
 finally:
     pipe.stop()
+

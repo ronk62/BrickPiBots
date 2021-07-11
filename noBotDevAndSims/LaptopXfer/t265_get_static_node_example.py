@@ -8,9 +8,7 @@
 #####################################################
 
 # First import the library
-#import pyrealsense2 as rs
-import pyrealsense2.pyrealsense2 as rs  # req'd for RPi3b and compiled installation
-
+import pyrealsense2 as rs
 import time
 
 # Declare RealSense pipeline, encapsulating the actual device and sensors
@@ -20,26 +18,44 @@ pipe = rs.pipeline()
 cfg = rs.config()
 cfg.enable_stream(rs.stream.pose)
 
+# Request static node info
+device = cfg.resolve(pipe).get_device()
+pose_sensor = device.first_pose_sensor()
+# result, translation, rotation = pose_sensor.get_static_node("name")
+# print("result = ",result)
+# print("translation = ",translation)
+# print("rotation = ",rotation)
+# print("")
+
+'''FAIL - something below breaks after executing this line (above)...
+
+result, translation, rotation = pose_sensor.get_static_node("name")
+
+...no issues if I comment just that one line
+
+'''
+
 # Start streaming with requested config
 pipe.start(cfg)
 
 try:
-    while(1):
+    for _ in range(50):
         # Wait for the next set of frames from the camera
-        frames = pipe.wait_for_frames()
+        # frames = pipe.wait_for_frames()
+        frames = pipe.wait_for_frames(10000)
 
         # Fetch pose frame
         pose = frames.get_pose_frame()
         if pose:
             # Print some of the pose data to the terminal
             data = pose.get_pose_data()
-            # print("Frame #{}".format(pose.frame_number))
+            print("Frame #{}".format(pose.frame_number))
             print("Position: {}".format(data.translation))
-            trackerConfidence = data.tracker_confidence
-            print("pose trackerConfidence is ", trackerConfidence)
-            # print("Velocity: {}".format(data.velocity))
-            # print("Acceleration: {}\n".format(data.acceleration))
-        time.sleep(0.5)
+            print("Velocity: {}".format(data.velocity))
+            print("Acceleration: {}\n".format(data.acceleration))
+
+        time.sleep(1)
 
 finally:
     pipe.stop()
+
