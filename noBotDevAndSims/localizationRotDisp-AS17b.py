@@ -23,7 +23,7 @@ H0 can represent the base frame itself with H1 representing the Apriltag...
 
 H0 in this bit of code is at the origin, aligned with the base frame
 
-H0 and R0 matrices are constructed from intuition due to initial condition simplicity
+H0 matrix is constructed from intuition due to initial condition simplicity
 
 H0_1 is built from R0_1 and d0_1 components
 
@@ -54,8 +54,6 @@ H1 = np.array([], dtype=np.int32)
 
 H0_1 = np.array([], dtype=np.int32)
 
-R = False
-
 # H0 at origin
 H0 = [[1,0,0,0],
 [0,1,0,0],
@@ -68,10 +66,6 @@ H0 = [[1,0,0,0],
 # [0,0,1,0],
 # [0,0,0,1]]
 
-# R0
-R0 = [[1,0,0],
-[0,1,0],
-[0,0,1]]
 
 # H1 also NOT at origin, offset from H0
 H1 = [[1,0,0,5],
@@ -104,10 +98,10 @@ d0_1 = [[ax1],[ay1],[0]]
 # V0 location and rotation
 x0 = H0[0][3]
 y0 = H0[1][3]
-vxx0 = [x0,x0 + R0[0][0]]
-vxy0 = [y0,y0 + R0[1][0]]
-vyx0 = [x0,x0 + R0[0][1]]
-vyy0 = [y0,y0 + R0[1][1]]
+vxx0 = [x0,x0 + H0[0][0]]
+vxy0 = [y0,y0 + H0[1][0]]
+vyx0 = [x0,x0 + H0[0][1]]
+vyy0 = [y0,y0 + H0[1][1]]
 
 print()
 print("the x,y position of H0 is  ", x0,y0)
