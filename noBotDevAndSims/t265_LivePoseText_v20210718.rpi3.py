@@ -88,8 +88,12 @@ while(True):
         try:
             # read the sensor - we really only need x, z, and yaw for this
             
-            # Wait for the next set of frames from the camera
-            frames = pipe.wait_for_frames()
+            try:
+                # Wait for the next set of frames from the camera
+                frames = pipe.wait_for_frames()
+
+            except RuntimeError:
+                print("wait for frames error")
 
             # Fetch pose frame
             pose = frames.get_pose_frame()
@@ -139,7 +143,7 @@ while(True):
 
                 time.sleep(0.5)
 
-                        
+               
         except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
             #finally:
             pipe.stop()
