@@ -3,6 +3,7 @@
 # Date          Author      Change Notes
 # 7/18/2021     Ron King    - created this to print live text data from the Intel RealSense T265
 #                           tracking camera to terminal for accuracy and repeatability testing
+# 7/25/2021     Ron King    - trimmed out some commented code
 #
 
 '''
@@ -25,14 +26,8 @@ pipe.start(cfg)
 '''
 
 
-import time, datetime, tty, sys, threading
-from matplotlib.colors import to_rgb
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-from matplotlib import style
-import numpy as np
+import time, datetime
 import math as m
-from numpy.lib.function_base import blackman
 
 # import the pyrealsense library
 import pyrealsense2.pyrealsense2 as rs  # req'd for RPi3b and compiled installation
@@ -99,12 +94,7 @@ while(True):
             pose = frames.get_pose_frame()
             if pose:
                 data = pose.get_pose_data()
-                # # Print some of the pose data to the terminal
-                # print("Frame #{}".format(pose.frame_number))
-                # print("Position: {}".format(data.translation))
-                # print("Velocity: {}".format(data.velocity))
-                # print("Acceleration: {}\n".format(data.acceleration))
-                
+                                
                 ### confidence info
                 ''' ignore mapperConfidence - it is never not 0 (zero)
                 # mapperConfidence = data.mapper_confidence
@@ -115,9 +105,7 @@ while(True):
 
                 xT = data.translation.x
                 zT = data.translation.z
-                # print(xTrans)
-                # print(zTrans)
-                # time.sleep(5)
+                
                 
                 # Euler angles from pose quaternion
                 # See also https://github.com/IntelRealSense/librealsense/issues/5178#issuecomment-549795232
@@ -132,11 +120,9 @@ while(True):
                 # roll  =  m.atan2(2.0 * (w*x + y*z), w*w - x*x - y*y + z*z) * 180.0 / m.pi;
                 yaw   =  m.atan2(2.0 * (w*z + x*y), w*w + x*x - y*y - z*z) * 180.0 / m.pi;
                 
-                # print("Frame #{}".format(pose.frame_number))
-                # print("RPY [deg]: Roll: {0:.7f}, Pitch: {1:.7f}, Yaw: {2:.7f}".format(roll, pitch, yaw))
-
                 # print formatted columns of data for easy consumption
                 if i == 0:
+                    print()
                     print("xT    |  zT    |  yaw    |  trackerConfidence")
                     print("------   ------   -------   ----------")
                 print(round(xT,2), "    ", round(zT,2),  "    ", round(yaw,2),  "    ", trackerConfidence)
@@ -145,6 +131,5 @@ while(True):
 
                
         except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
-            #finally:
             pipe.stop()
 
