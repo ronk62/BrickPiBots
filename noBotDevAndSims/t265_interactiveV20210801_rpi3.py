@@ -13,6 +13,8 @@
 #                           - added interactive controls for saving/loading maps, starting/stopping the
 #                             pipeline, setting static node 1
 #
+# 8/14/2021                 - added note below about control key 'r' for reseting the t265
+#
 #                           - below is a view of the control keys
 
 '''
@@ -21,6 +23,7 @@ save map = 'm'
 load map = 'l'
 set static node 1 = '1'
 start/stop pipeline (toggle) = 'i'
+reset hardware = 'r'
 
 '''
 
