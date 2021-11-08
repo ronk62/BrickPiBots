@@ -9,7 +9,8 @@ import numpy as np
 i = 0
 
 # Image directory 
-directory = r'/home/robot/ev3dev2Projects/PiCam/calibrationImages/20210215b'
+# directory = r'/home/robot/ev3dev2Projects/PiCam/calibrationImages/20210215b'
+directory = r'/home/robot/ev3dev2Projects/noBotDevAndSims/sentdex/ORB_BFMatcher/refData'
   
 # Change the current directory  
 # to specified directory  

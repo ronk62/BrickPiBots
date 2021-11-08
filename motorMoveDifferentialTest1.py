@@ -80,11 +80,18 @@ try:
     # mdiff.turn_to_angle(SpeedRPM(25), 90)
 
     # Drive in a rectangle 10 times
+    # for i in range(11):
+    #     # mdiff.turn_to_angle(SpeedRPM(25), 120)
+    #     mdiff.on_to_coordinates(SpeedRPM(25), 0, DistanceFeet(1).mm)
+    #     mdiff.on_to_coordinates(SpeedRPM(25), DistanceFeet(2).mm, DistanceFeet(1).mm)
+    #     mdiff.on_to_coordinates(SpeedRPM(25), DistanceFeet(2).mm, 0)
+    #     mdiff.on_to_coordinates(SpeedRPM(25), 0, 0)
+    #     mdiff.turn_to_angle(SpeedRPM(25), 90)
+
+    # Drive between two points 10 times
     for i in range(11):
-        mdiff.turn_to_angle(SpeedRPM(25), 120)
-        mdiff.on_to_coordinates(SpeedRPM(25), 0, DistanceFeet(1).mm)
-        mdiff.on_to_coordinates(SpeedRPM(25), DistanceFeet(2).mm, DistanceFeet(1).mm)
-        mdiff.on_to_coordinates(SpeedRPM(25), DistanceFeet(2).mm, 0)
+        # mdiff.turn_to_angle(SpeedRPM(25), 120)
+        mdiff.on_to_coordinates(SpeedRPM(25), 0, 2500)
         mdiff.on_to_coordinates(SpeedRPM(25), 0, 0)
         mdiff.turn_to_angle(SpeedRPM(25), 90)
 
