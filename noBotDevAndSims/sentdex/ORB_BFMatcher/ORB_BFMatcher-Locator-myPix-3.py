@@ -118,8 +118,6 @@ print("scene_corners = ", scene_corners)
 print("")
 
 # caculate and print scene_area
-# scene_corners_array = np.asarray(scene_corners) # convert to np array
-# scene_corners_array = np.append(scene_corners_array, scene_corners_array[0][0])
 
 x = [0,0,0,0,0]
 y = [0,0,0,0,0]
@@ -136,9 +134,8 @@ for i in range(4):
     if y[i] > 480:
         y[i] = 480
 
-# x[4], y[4] = scene_corners[0][0]  # this works
-x[4], y[4] = x[0], y[0]    # this is experimental
-# scene_corners_array = [[x[0],y[0]],[x[1],y[1]],[x[2],y[2]],[x[3],y[3]],[x[4],y[4]]]
+x[4], y[4] = x[0], y[0] 
+
 scene_corners_xarray = x[0],x[1],x[2],x[3],x[4]
 scene_corners_yarray = y[0],y[1],y[2],y[3],y[4]
 
