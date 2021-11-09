@@ -59,7 +59,7 @@ def findDes(images):
     return kpList, desList
 
 
-def findID(img, kpList, desList, images, thresh = 15):
+def findID(img, kpList, desList, images, thresh = 7):      # chng to 7 for testing; typical thresh of 15 works well
     keypoints_obj, des2 = orb.detectAndCompute(img,None)
     bf = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
     matchList = []
@@ -223,7 +223,7 @@ while True:
     if debug:
         cv2.waitKey()
     else:
-        cv2.waitKey(1)
+        cv2.waitKey(30)
     fps = 1 / (time.time() - tic)
     print("fps = ", fps, "id = ", id, "classnames = ", classnames[id])
 
