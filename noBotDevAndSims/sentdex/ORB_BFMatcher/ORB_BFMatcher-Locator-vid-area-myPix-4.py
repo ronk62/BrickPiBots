@@ -223,7 +223,8 @@ while True:
     if debug:
         cv2.waitKey()
     else:
-        cv2.waitKey(30)
+        # cv2.waitKey(30)
+        cv2.waitKey()
     fps = 1 / (time.time() - tic)
     print("fps = ", fps, "id = ", id, "classnames = ", classnames[id])
 
