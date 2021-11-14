@@ -20,7 +20,8 @@ import time, os
 
 #print(cv2.__version__)
 
-debug = 1 # set to 1 or True for debug; 0 or False to turn debug off
+# set debug level
+debug = 1 # set to 0 for no debug, 1 for lite debug, or 2 for heavy debug
 
 def PolyArea(x,y):
     return 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))
@@ -85,13 +86,16 @@ def findID(img, kpList, desList, images, thresh = 7):      # chng to 7 for testi
             
             #### modified stuff to make compatible with New stuff
             img_object = img
-            good_matches = matches
-            ####
-
-            if debug:
+            good_matches = matches[:15]
+            print("good_matches = ", good_matches)
+            print("")
+            ###
+            
+            if debug > 0:
                 #-- Draw matches
                 img_matches = np.empty((max(img_object.shape[0], img_scene.shape[0]), img_object.shape[1]+img_scene.shape[1], 3), dtype=np.uint8)
-                cv2.drawMatches(img_object, keypoints_obj, img_scene, keypoints_scene, good_matches[:3],img_matches, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+                # cv2.drawMatches(img_object, keypoints_obj, img_scene, keypoints_scene, good_matches[:3],img_matches, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+                cv2.drawMatches(img_object, keypoints_obj, img_scene, keypoints_scene, good_matches[:15],img_matches, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 
             #-- Localize the object
             obj = np.empty((len(good_matches),2), dtype=np.float32)
@@ -102,13 +106,15 @@ def findID(img, kpList, desList, images, thresh = 7):      # chng to 7 for testi
                 obj[i,1] = keypoints_obj[good_matches[i].queryIdx].pt[1]
                 scene[i,0] = keypoints_scene[good_matches[i].trainIdx].pt[0]
                 scene[i,1] = keypoints_scene[good_matches[i].trainIdx].pt[1]
-            H, _ =  cv2.findHomography(obj, scene, cv2.RANSAC)
 
             print("")
             print("obj = ", obj)
             print("")
             print("scene = ", scene)
             print("")
+
+            H, _ =  cv2.findHomography(obj, scene, cv2.RANSAC)
+
             print("H = ", H)
             print("")
 
@@ -162,7 +168,7 @@ def findID(img, kpList, desList, images, thresh = 7):      # chng to 7 for testi
             print("scene_area = ", scene_area)
             print("")
 
-            if debug:
+            if debug > 0:
                 #-- Draw lines between the corners (the mapped object in the scene - image_2 )
                 cv2.line(img_matches, (int(scene_corners[0,0,0] + img_object.shape[1]), int(scene_corners[0,0,1])),\
                     (int(scene_corners[1,0,0] + img_object.shape[1]), int(scene_corners[1,0,1])), (0,255,0), 4)
@@ -173,9 +179,10 @@ def findID(img, kpList, desList, images, thresh = 7):      # chng to 7 for testi
                 cv2.line(img_matches, (int(scene_corners[3,0,0] + img_object.shape[1]), int(scene_corners[3,0,1])),\
                     (int(scene_corners[0,0,0] + img_object.shape[1]), int(scene_corners[0,0,1])), (255,0,0), 4)
                 
-                #-- Show detected matches
-                cv2.imshow('Good Matches & Object detection', img_matches)
-                cv2.waitKey()
+                if debug == 2 or scene_area > 150000:
+                    #-- Show detected matches
+                    cv2.imshow('Good Matches & Object detection', img_matches)
+                    cv2.waitKey()
 
 
         else:
@@ -220,11 +227,11 @@ while True:
         cv2.putText(imgOriginal,classnames[id], (50, 50),cv2.FONT_HERSHEY_COMPLEX,1,(0,0,255),3)
 
     cv2.imshow('Output',imgOriginal)
-    if debug:
+    if debug > 0:
         cv2.waitKey()
     else:
         # cv2.waitKey(30)
-        cv2.waitKey()
+        cv2.waitKey(2000)
     fps = 1 / (time.time() - tic)
     print("fps = ", fps, "id = ", id, "classnames = ", classnames[id])
 
