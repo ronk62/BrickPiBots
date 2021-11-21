@@ -174,6 +174,7 @@ i = 0                   # "outer" iterator for dist point sampling
 j = 0                   # "inner" iterator for dist point sampling
 # prev_mRposition = 0     # var to help detect when to save a new OD pair (motor pos, cmpVal) to array or print to screen
 badValCount = 0
+htCmpCal_mode = -1      # start in htCmpCal_mode off, '-1'; '1' means htCmpCal_mode is enabled
 
 
 ### SLAM vars ###
@@ -322,6 +323,11 @@ if __name__ == "__main__":
             print("toggled sample_mode (i); now set to...  ", sample_mode)
         
 
+        if kx == 99: # c pushed - enter HT compass calibration routine
+            htCmpCal_mode *= -1
+            print("toggled HT compass calibration mode (c); now set to...  ", htCmpCal_mode)
+        
+
         ## some notes about odometry and robot wheelbase
         # from V501b-9.csv
         #      --> average of 18.452752525 ticks per cm
@@ -452,6 +458,38 @@ if __name__ == "__main__":
 
             sample_mode = -1
             print("Sampling complete. Returning to keyboard cmd mode.")
+
+
+        if htCmpCal_mode > 0:
+            try:
+                # Make sure motors are initially stopped
+                mL.on(0, brake=True)
+                mR.on(0, brake=True)
+                
+                # start compass cal
+                cmp.command = 'BEGIN-CAL'
+                time.sleep(0.5)
+
+                # start 360 cw robot rotation
+                mL.on_for_degrees(speed=3, degrees= 1700)
+
+            except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
+                mL.on(0, brake=False)
+                mR.on(0, brake=False)
+                cmp.command = 'END-CAL'
+                htCmpCal_mode = -1
+
+            # Make sure motors are both stopped
+            mL.on(0, brake=True)
+            mR.on(0, brake=True)
+
+            # stop compass cal
+            cmp.command = 'END-CAL'
+            time.sleep(0.5)
+
+            # return to main loop and keyboard cmd mode
+            htCmpCal_mode = -1
+            print("HT compass calibration routine complete. Returning to keyboard cmd mode.")
 
 
         # calculate motor speeds for turning right
