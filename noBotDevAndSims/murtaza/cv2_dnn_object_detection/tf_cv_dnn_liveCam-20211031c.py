@@ -80,4 +80,4 @@ while True:
 
     img = cv.resize(img, (320, 320))
     cv.imshow('Output',img)
-    cv.waitKey(1)
+    cv.waitKey(2000)
