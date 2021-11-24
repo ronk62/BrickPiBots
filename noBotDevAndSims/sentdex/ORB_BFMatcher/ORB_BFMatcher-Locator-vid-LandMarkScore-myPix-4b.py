@@ -4,7 +4,7 @@
 # Date          Author      Change Notes      
 # 11/21/2021    Ron King    - created from ORB_BFMatcher-Locator-vid-score-myPix-4
 #                           - this model uses manually extracted/cropped image sections with prominent
-#                             landmarks selected for futur triagulation
+#                             landmarks selected for future triagulation
 #                           - swapped Obj and Scene for kp and des processing since the scoring mechanism
 #                             is based on finding the landmark in the scene
 
@@ -33,6 +33,22 @@
 ## * --- use kmeans clusters to collect a group of kps and their coords to use a landmarks
 ## * --- this would allow for automated landmark extraction and use
 
+#######  Update: IDEAS FOR NEW PIPELINE AND TESTING  #######
+## * - Segmentation: k-means clustering
+## * --- use Blob detection at first to evaluate scene image
+## * --- find 'useful blobs' (larger size? some means of rough density measurement?)
+## * --- use use count of useful blobs to determin 'k' for k-means clustering
+## * - BoVW: measure the usefulness of desciptors for raw use as words in the dictionary
+## * --- using a very small set of qry and train images (1 to start with), meausre some statistics
+## * ---- gather and plot total count of descriptor per cycle
+## * ---- gather and plot count of unique descriptors over time (show count per cycle)
+## * --- repeat the above with a growing set of qry and train images
+## * - Explore scoring systems:
+## * --- revisit Homography with Area and least-squares, perhaps compare like-clusters
+## * ----- look at training image extracted cluster and compare to qry image after  warpPerspective
+## * ----- ref: https://www.youtube.com/watch?v=cA8K8dl-E6k
+## * --- look into BoVW histogram scoring, using descriptors as words
+## * --- if word count (decriptor count) becomes unmanagable (size, cpu-cost), look at subset per cluster
 
 
 '''
