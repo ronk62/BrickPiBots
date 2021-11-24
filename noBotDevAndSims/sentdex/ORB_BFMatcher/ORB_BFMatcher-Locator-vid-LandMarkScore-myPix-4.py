@@ -19,6 +19,20 @@
 ## * - repeat for landmark #2, then do triangulation with law of sines
 #
 #
+#######  IDEAS FOR NEW PIPELINE AND TESTING  #######
+## * - normalize scene and obj points so that you are comparing like-values for pixel x, y
+## * - use the avg x and avg y for 'centriod', or send to kmeans clustering to get centroids (plural)
+## * - use a LiveStats approach to gather avg, min, max, stdev for x, and y from a given location
+## * --- do the above for scene x,y pixels (before normalizing) to start with to see if stable
+## * --- repeat the above from ever-further locations if values are predictable from same location
+## * - for scoring, use normalized scene and obj bounding boxes for area and least squares formula
+## * - if a single landmark can be repeatably found, try to get a second and then triagulate
+## * - see if delta y (max - min) can be used as a relative distance indicator
+## * - see if delta x (centroids) from one frame to another can be used to measure distance to landmark
+## * - perhaps go back to normal obj/scene image collection without cropping the obj
+## * --- use kmeans clusters to collect a group of kps and their coords to use a landmarks
+## * --- this would allow for automated landmark extraction and use
+
 
 
 '''
@@ -44,7 +58,7 @@ import time, os
 #print(cv2.__version__)
 
 # set debug level
-debug = 0 # set to 0 for no debug, 1 for lite debug, or 2 for heavy debug
+debug = 1 # set to 0 for no debug, 1 for lite debug, or 2 for heavy debug
 
 def PolyArea(x,y):
     return 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))
@@ -122,54 +136,54 @@ def findID(img, kpList, desList, images, thresh = 7):      # chng to 7 for testi
                 cv2.drawMatches(img_scene , keypoints_scene, img_object, keypoints_obj, good_matches[:10],img_matches, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 
             #-- Localize the object
-            obj = np.empty((len(good_matches),2), dtype=np.float32)
             scene = np.empty((len(good_matches),2), dtype=np.float32)
+            obj = np.empty((len(good_matches),2), dtype=np.float32)
             for i in range(len(good_matches)):
                 #-- Get the keypoints from the good matches
-                obj[i,0] = keypoints_scene[good_matches[i].queryIdx].pt[0]
-                obj[i,1] = keypoints_scene[good_matches[i].queryIdx].pt[1]
-                scene[i,0] = keypoints_obj[good_matches[i].trainIdx].pt[0]
-                scene[i,1] = keypoints_obj[good_matches[i].trainIdx].pt[1]
+                scene[i,0] = keypoints_scene[good_matches[i].queryIdx].pt[0]
+                scene[i,1] = keypoints_scene[good_matches[i].queryIdx].pt[1]
+                obj[i,0] = keypoints_obj[good_matches[i].trainIdx].pt[0]
+                obj[i,1] = keypoints_obj[good_matches[i].trainIdx].pt[1]
 
-            print("")
-            print("obj = ", obj)
             print("")
             print("scene = ", scene)
             print("")
+            print("obj = ", obj)
+            print("")
 
-            H, _ =  cv2.findHomography(obj, scene, cv2.RANSAC)
+            H, _ =  cv2.findHomography(scene, obj, cv2.RANSAC)
 
             print("H = ", H)
             print("")
 
 
             #-- Get the corners from the image_1 ( the object to be "detected" )
-            obj_corners = np.empty((4,1,2), dtype=np.float32)
-            obj_corners[0,0,0] = 0
-            obj_corners[0,0,1] = 0
-            obj_corners[1,0,0] = img_scene .shape[1]
-            obj_corners[1,0,1] = 0
-            obj_corners[2,0,0] = img_scene .shape[1]
-            obj_corners[2,0,1] = img_scene .shape[0]
-            obj_corners[3,0,0] = 0
-            obj_corners[3,0,1] = img_scene .shape[0]
-            scene_corners = cv2.perspectiveTransform(obj_corners, H)
+            scene_corners = np.empty((4,1,2), dtype=np.float32)
+            scene_corners[0,0,0] = 0
+            scene_corners[0,0,1] = 0
+            scene_corners[1,0,0] = img_scene .shape[1]
+            scene_corners[1,0,1] = 0
+            scene_corners[2,0,0] = img_scene .shape[1]
+            scene_corners[2,0,1] = img_scene .shape[0]
+            scene_corners[3,0,0] = 0
+            scene_corners[3,0,1] = img_scene .shape[0]
+            obj_corners = cv2.perspectiveTransform(scene_corners, H)
 
-            print("")
-            print("obj_corners = ", obj_corners)
             print("")
             print("scene_corners = ", scene_corners)
             print("")
+            print("obj_corners = ", obj_corners)
+            print("")
 
-            # caculate and print sum of diff (obj_corners - scene_corners)
+            # caculate and print sum of diff (scene_corners - obj_corners)
             sumOfSqrs = 0
             ox = [0,0,0,0]
             oy = [0,0,0,0]
             sx = [0,0,0,0]
             sy = [0,0,0,0]
             for i in range(4):
-                ox[i], oy[i] = obj_corners[i][0]
-                sx[i], sy[i] = scene_corners[i][0]
+                ox[i], oy[i] = scene_corners[i][0]
+                sx[i], sy[i] = obj_corners[i][0]
                 sumOfSqrs = sumOfSqrs + (ox[i] - (sx[i]))**2 + (oy[i] - (sy[i]))**2
             print("sumOfSqrs = ", sumOfSqrs)
 
@@ -179,7 +193,7 @@ def findID(img, kpList, desList, images, thresh = 7):      # chng to 7 for testi
             y = [0,0,0,0,0]
 
             for i in range(4):
-                x[i], y[i] = scene_corners[i][0]
+                x[i], y[i] = obj_corners[i][0]
                 # experimental
                 if x[i] < 0:
                     x[i] = 0
@@ -192,13 +206,13 @@ def findID(img, kpList, desList, images, thresh = 7):      # chng to 7 for testi
 
             x[4], y[4] = x[0], y[0] 
 
-            scene_corners_xarray = x[0],x[1],x[2],x[3],x[4]
-            scene_corners_yarray = y[0],y[1],y[2],y[3],y[4]
+            obj_corners_xarray = x[0],x[1],x[2],x[3],x[4]
+            obj_corners_yarray = y[0],y[1],y[2],y[3],y[4]
 
-            print(scene_corners_xarray) # for dev/test
-            print(scene_corners_yarray) # for dev/test
+            print(obj_corners_xarray) # for dev/test
+            print(obj_corners_yarray) # for dev/test
 
-            scene_area = PolyArea(scene_corners_xarray, scene_corners_yarray)
+            scene_area = PolyArea(obj_corners_xarray, obj_corners_yarray)
 
             print("")
             print("scene_area = ", scene_area)
@@ -211,14 +225,14 @@ def findID(img, kpList, desList, images, thresh = 7):      # chng to 7 for testi
 
             if debug > 0:
                 #-- Draw lines between the corners (the mapped object in the scene - image_2 )
-                cv2.line(img_matches, (int(scene_corners[0,0,0] + img_scene .shape[1]), int(scene_corners[0,0,1])),\
-                    (int(scene_corners[1,0,0] + img_scene .shape[1]), int(scene_corners[1,0,1])), (0,255,0), 4)
-                cv2.line(img_matches, (int(scene_corners[1,0,0] + img_scene .shape[1]), int(scene_corners[1,0,1])),\
-                    (int(scene_corners[2,0,0] + img_scene .shape[1]), int(scene_corners[2,0,1])), (0,0,255), 4)
-                cv2.line(img_matches, (int(scene_corners[2,0,0] + img_scene .shape[1]), int(scene_corners[2,0,1])),\
-                    (int(scene_corners[3,0,0] + img_scene .shape[1]), int(scene_corners[3,0,1])), (0,255,0), 4)
-                cv2.line(img_matches, (int(scene_corners[3,0,0] + img_scene .shape[1]), int(scene_corners[3,0,1])),\
-                    (int(scene_corners[0,0,0] + img_scene .shape[1]), int(scene_corners[0,0,1])), (255,0,0), 4)
+                cv2.line(img_matches, (int(obj_corners[0,0,0] + img_scene .shape[1]), int(obj_corners[0,0,1])),\
+                    (int(obj_corners[1,0,0] + img_scene .shape[1]), int(obj_corners[1,0,1])), (0,255,0), 4)
+                cv2.line(img_matches, (int(obj_corners[1,0,0] + img_scene .shape[1]), int(obj_corners[1,0,1])),\
+                    (int(obj_corners[2,0,0] + img_scene .shape[1]), int(obj_corners[2,0,1])), (0,0,255), 4)
+                cv2.line(img_matches, (int(obj_corners[2,0,0] + img_scene .shape[1]), int(obj_corners[2,0,1])),\
+                    (int(obj_corners[3,0,0] + img_scene .shape[1]), int(obj_corners[3,0,1])), (0,255,0), 4)
+                cv2.line(img_matches, (int(obj_corners[3,0,0] + img_scene .shape[1]), int(obj_corners[3,0,1])),\
+                    (int(obj_corners[0,0,0] + img_scene .shape[1]), int(obj_corners[0,0,1])), (255,0,0), 4)
                 
                 if debug == 2 or scene_area > 150000:
                     #-- Show detected matches
