@@ -162,13 +162,17 @@ def findID(img, kpList, desList, images, thresh = 7):      # chng to 7 for testi
             print("good_matches = ", good_matches)
             print("")
             
-            ## for testing
+            ## for testing and possible scoring element (mDistSum)
+            mDistSum = 0
             for m in good_matches:
                 print(des[m.trainIdx])
                 print("#########")
                 print(des2[m.queryIdx])
+                print("###")
+                print(m.distance)
+                mDistSum = mDistSum + m.distance
                 print("############################################################################")
-            
+            print("mDistSum = ", mDistSum)
             ###
             
             if debug > 0:
