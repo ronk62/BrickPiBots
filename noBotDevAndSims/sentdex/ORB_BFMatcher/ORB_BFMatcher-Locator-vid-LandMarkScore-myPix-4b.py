@@ -7,6 +7,11 @@
 #                             landmarks selected for future triagulation
 #                           - swapped Obj and Scene for kp and des processing since the scoring mechanism
 #                             is based on finding the landmark in the scene
+#
+# 11/24/2021    Ron King    - test code to help understand the anatomy of DMatch
+#                           - ref: https://docs.opencv.org/4.2.0/dc/dc3/tutorial_py_matcher.html 
+#                           - section ("What is this Matcher Object?")
+#
 
 #                           Dont forget to rediect X and start xming as needed
 
@@ -71,6 +76,8 @@ import cv2
 import matplotlib.pyplot as plt
 import time, os
 
+from numpy.lib.function_base import average
+
 #print(cv2.__version__)
 
 # set debug level
@@ -82,6 +89,8 @@ def PolyArea(x,y):
 path = '/home/robot/ev3dev2Projects/noBotDevAndSims/sentdex/ORB_BFMatcher/refData'
 
 orb = cv2.ORB_create(nfeatures=3000)
+## for testing
+# orb = cv2.ORB_create(nfeatures=30)
 
 ### Import RefData Images
 images = []
@@ -129,12 +138,21 @@ def findID(img, kpList, desList, images, thresh = 7):      # chng to 7 for testi
         keypoints_obj = kpList[ii]
         des  = desList[ii]
         img_object = images[ii]
+        ## for testing
+        # print("des (obj) = ", des)
+        print("min/max/avg/len des (obj) = ", np.min(des), np.max(des), np.average(des), len(des))
+        # print("des2 (scene) = ", des2)
+        print("min/max/avg/len des2 (scene) = ", np.min(des2), np.max(des2), np.average(des2), len(des2))
+        # print()
         # matches = bf.match(des,des2)
         matches = bf.match(des2,des)  # reversed des and des2 to match queryIdx and trainIdx below
         matches = sorted(matches, key = lambda x:x.distance)
         print("len(matches) = ", len(matches))
-        matchList.append(len(matches)) # vestigial ?
+        ## for testing
+        # for m in matches:
+        #     print(des[m.trainIdx])
 
+        matchList.append(len(matches)) # vestigial ?
 
         if len(matches) >= thresh:
             
@@ -143,6 +161,14 @@ def findID(img, kpList, desList, images, thresh = 7):      # chng to 7 for testi
             good_matches = matches[:15]
             print("good_matches = ", good_matches)
             print("")
+            
+            ## for testing
+            for m in good_matches:
+                print(des[m.trainIdx])
+                print("#########")
+                print(des2[m.queryIdx])
+                print("############################################################################")
+            
             ###
             
             if debug > 0:
