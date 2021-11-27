@@ -1,3 +1,7 @@
+# 11/24/2021    - added mDistSum for testing and possible scoring element
+#               - changed 'good_matches = matches' to 'good_matches = matches[:15]'
+
+
 '''
 Some notes for future consideration:
 
@@ -64,20 +68,31 @@ print("len matches... ", len(matches))
 img_object = img1
 img_scene = img2
 
-good_matches = matches
+good_matches = matches[:15]
 
 keypoints_obj = kp1
 keypoints_scene = kp2
 
 # img_matches = cv2.drawMatches(img1,kp1,img2,kp2,matches[:10],None, flags=2)
 
-
+## for testing and possible scoring element (mDistSum)
+mDistSum = 0
+for m in good_matches:
+    print(des2[m.trainIdx])
+    print("#########")
+    print(des1[m.queryIdx])
+    print("###")
+    print(m.distance)
+    mDistSum = mDistSum + m.distance
+    print("############################################################################")
+print("mDistSum = ", mDistSum)
+###
 
 #### New stuff from 'https://docs.opencv.org/3.4.15/d7/dff/tutorial_feature_homography.html'
 
 #-- Draw matches
 img_matches = np.empty((max(img_object.shape[0], img_scene.shape[0]), img_object.shape[1]+img_scene.shape[1], 3), dtype=np.uint8)
-cv2.drawMatches(img_object, keypoints_obj, img_scene, keypoints_scene, good_matches[:40],img_matches, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+cv2.drawMatches(img_object, keypoints_obj, img_scene, keypoints_scene, good_matches[:15],img_matches, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 
 #-- Localize the object
 obj = np.empty((len(good_matches),2), dtype=np.float32)
@@ -162,6 +177,10 @@ cv2.line(img_matches, (int(scene_corners[3,0,0] + img_object.shape[1]), int(scen
 # reprint len matches
 print()
 print("reprint len matches... ", len(matches))
+
+# reprint reprint mDistSum
+print()
+print("reprint mDistSum = ", mDistSum)
 
 
 #-- Show detected matches
