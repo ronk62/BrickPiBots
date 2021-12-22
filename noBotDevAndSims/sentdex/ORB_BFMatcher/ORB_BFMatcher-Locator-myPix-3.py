@@ -35,9 +35,15 @@ def PolyArea(x,y):
 img1 = cv2.imread('/home/robot/ev3dev2Projects/noBotDevAndSims/sentdex/ORB_BFMatcher/mypic-template.jpg' ,0)
 img2 = cv2.imread('/home/robot/ev3dev2Projects/noBotDevAndSims/sentdex/ORB_BFMatcher/mypic.jpg' ,0)
 
+# img1 = np.reshape(img1, (img2.shape))
 print(img1.shape)
 print(img1.size)
 print(img1.dtype)
+
+# img2 = np.reshape(img2, (img1.shape))
+print(img2.shape)
+print(img2.size)
+print(img2.dtype)
 
 # plt.imshow(img1)
 # plt.imshow(img2)

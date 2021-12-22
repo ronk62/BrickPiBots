@@ -21,7 +21,7 @@ import time, os
 #print(cv2.__version__)
 
 # set debug level
-debug = 1 # set to 0 for no debug, 1 for lite debug, or 2 for heavy debug
+debug = 0 # set to 0 for no debug, 1 for lite debug, or 2 for heavy debug
 
 def PolyArea(x,y):
     return 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))
@@ -95,7 +95,7 @@ def findID(img, kpList, desList, images, thresh = 7):      # chng to 7 for testi
                 #-- Draw matches
                 img_matches = np.empty((max(img_object.shape[0], img_scene.shape[0]), img_object.shape[1]+img_scene.shape[1], 3), dtype=np.uint8)
                 # cv2.drawMatches(img_object, keypoints_obj, img_scene, keypoints_scene, good_matches[:3],img_matches, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
-                cv2.drawMatches(img_object, keypoints_obj, img_scene, keypoints_scene, good_matches[:15],img_matches, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+                cv2.drawMatches(img_object, keypoints_obj, img_scene, keypoints_scene, good_matches[:10],img_matches, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 
             #-- Localize the object
             obj = np.empty((len(good_matches),2), dtype=np.float32)
