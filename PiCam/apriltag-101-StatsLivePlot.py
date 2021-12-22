@@ -62,7 +62,8 @@ ZtStd = np.array([], dtype=np.int32)
 ODtStats = np.array([], dtype=np.int32)       # array to index each sample group (x axis indep var for stats)
 
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)   # primary camera
+# cap = cv2.VideoCapture(-1)   # hail Marry
 
 np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 

@@ -12,6 +12,7 @@ i = 0
 # initialize the camera and grab a reference to the raw camera capture
 cap = cv2.VideoCapture(0)  # primary cam
 # cap = cv2.VideoCapture(1)  # secondary cam
+# cap = cv2.VideoCapture(-1)  # hail Marry
 
 # cap.release()
 # cv2.destroyAllWindows()

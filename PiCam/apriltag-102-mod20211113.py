@@ -172,7 +172,9 @@ result = []
 tagInCamFrame = np.array([[],[],[],[]], dtype=np.int32)
 camInTagFrame = np.array([[],[],[],[]], dtype=np.int32)
 
-cap = cv2.VideoCapture(0)
+cap = cv2.VideoCapture(0)  # primary cam
+# cap = cv2.VideoCapture(1)  # secondary cam
+# cap = cv2.VideoCapture(-1)  # hail Marry
 
  
 while(True):
