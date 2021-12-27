@@ -12,6 +12,8 @@
 #                           - currently, this will only collect images with a changing y-value and constant
 #                             x-value. Operator must align the x position prior to launch.
 #
+# 12/27/2021    Ron King    - discovered problems in data that stem from not clearing the image buffer
+#
 
 
 """
