@@ -47,7 +47,8 @@ ONE_FOOT_CICLE_CIRCUMFERENCE_MM = 2 * pi * ONE_FOOT_CICLE_RADIUS_MM
 mdiff = MoveDifferential(OUTPUT_A, OUTPUT_B, MyTire, 16 * STUD_MM)
 
 # Image directory 
-directory = r'/home/robot/ev3dev2Projects/noBotDevAndSims/sentdex/ORB_BFMatcher/refDataDayX100'
+# directory = r'/home/robot/ev3dev2Projects/noBotDevAndSims/sentdex/ORB_BFMatcher/refDataDayX100'
+directory = r'/home/robot/ev3dev2Projects/noBotDevAndSims/sentdex/ORB_BFMatcher/refData'
   
 # Change the current directory  
 # to specified directory  
