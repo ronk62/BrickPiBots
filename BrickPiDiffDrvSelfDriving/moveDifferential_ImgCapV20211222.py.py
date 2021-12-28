@@ -78,6 +78,10 @@ try:
     # Take a photo, then drive 10cm forward (incrementing y-position) 11 times
     for i in range(12):
         print("Take a photo...", i)  # for initial testing
+
+        # flush the camera frame buffer
+        for j in range(7):
+            ret, frame = cap.read()
         
         # grab an image frame from the camera
         ret, frame = cap.read()
