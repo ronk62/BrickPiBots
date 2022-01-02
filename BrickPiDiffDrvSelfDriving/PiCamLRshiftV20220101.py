@@ -47,9 +47,9 @@ while (True):
 
     if x == 60: # < key pushed
         prev_mShuttle_pos = mShuttle.position
-        mShuttle.duty_cycle_sp = -22
+        mShuttle.duty_cycle_sp = 22
         time.sleep(0.25)
-        mShuttle.duty_cycle_sp = -20
+        mShuttle.duty_cycle_sp = 20
         while prev_mShuttle_pos != mShuttle.position:
             prev_mShuttle_pos = mShuttle.position
             print("< key pressed... x, mShuttleDty vals =  ", x, mShuttle.duty_cycle_sp)
@@ -61,9 +61,9 @@ while (True):
 
     if x == 62: # > key pushed
         prev_mShuttle_pos = mShuttle.position
-        mShuttle.duty_cycle_sp = 22
+        mShuttle.duty_cycle_sp = -22
         time.sleep(0.25)
-        mShuttle.duty_cycle_sp = 20
+        mShuttle.duty_cycle_sp = -20
         while prev_mShuttle_pos != mShuttle.position:
             prev_mShuttle_pos = mShuttle.position
             print("> key pressed... x, mShuttleDty vals =  ", x, mShuttle.duty_cycle_sp)
