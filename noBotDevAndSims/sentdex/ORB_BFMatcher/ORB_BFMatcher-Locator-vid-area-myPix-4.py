@@ -21,7 +21,7 @@ import time, os
 #print(cv2.__version__)
 
 # set debug level
-debug = 0 # set to 0 for no debug, 1 for lite debug, or 2 for heavy debug
+debug = 2 # set to 0 for no debug, 1 for lite debug, or 2 for heavy debug
 
 def PolyArea(x,y):
     return 0.5*np.abs(np.dot(x,np.roll(y,1))-np.dot(y,np.roll(x,1)))

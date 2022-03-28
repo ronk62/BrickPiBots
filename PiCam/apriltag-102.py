@@ -117,7 +117,7 @@ theta1Deg=135  # y rotation angle between H0 and H1 (positive values are cw when
 theta1Rad=math.radians(theta1Deg)
 
 # Assign displacement values
-ax1=0.9     # x displacement between H0 and H1 in meters
+ax1=0       # x displacement between H0 and H1 in meters
 az1=0       # z displacement between H0 and H1 in meters
 
 

@@ -70,7 +70,8 @@ print("len matches... ", len(matches))
 img_object = img1
 img_scene = img2
 
-good_matches = matches[:15]   # most sparce
+# good_matches = matches[:15]   # most sparce
+good_matches = matches[:500]   # more sparce
 # good_matches = matches[:1000]   # moderately sparce
 # good_matches = matches   # no points trimmed
 

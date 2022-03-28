@@ -74,7 +74,8 @@ print("len matches... ", len(matches))
 img_object = img1
 img_scene = img2
 
-good_matches = matches[:15]
+# good_matches = matches[:15]
+good_matches = matches[:500]
 
 keypoints_obj = kp1
 keypoints_scene = kp2
@@ -98,7 +99,8 @@ print("mDistSum = ", mDistSum)
 
 #-- Draw matches
 img_matches = np.empty((max(img_object.shape[0], img_scene.shape[0]), img_object.shape[1]+img_scene.shape[1], 3), dtype=np.uint8)
-cv2.drawMatches(img_object, keypoints_obj, img_scene, keypoints_scene, good_matches[:15],img_matches, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+# cv2.drawMatches(img_object, keypoints_obj, img_scene, keypoints_scene, good_matches[:15],img_matches, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+cv2.drawMatches(img_object, keypoints_obj, img_scene, keypoints_scene, good_matches[:500],img_matches, flags=cv2.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 
 #-- Localize the object
 obj = np.empty((len(good_matches),2), dtype=np.float32)
