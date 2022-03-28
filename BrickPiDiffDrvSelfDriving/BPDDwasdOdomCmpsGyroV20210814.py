@@ -387,7 +387,7 @@ if __name__ == "__main__":
                 # for quick testing
                 for i in range(10,359,10):
                     # rotate robot 10 deg cw
-                    print("rotating robot 3 deg cw, then pausing for 1 sec; i = ", i) 
+                    print("rotating robot 10 deg cw, then pausing for 1 sec; i = ", i) 
                     mL.on_for_degrees(speed=3, degrees= 10 * 4.5)
                     
                     # pause to let robot top shaking
