@@ -98,8 +98,9 @@ try:
 
     # Use odometry to drive to specific coordinates
     # mdiff.on_to_coordinates(SpeedRPM(25), 600, 300)
-    mdiff.on_to_coordinates(SpeedRPM(15), 0, 150)
-    # mdiff.turn_to_angle(SpeedRPM(25), 90)
+    mdiff.on_to_coordinates(SpeedRPM(15), 0, -3400)
+    mdiff.turn_to_angle(SpeedRPM(5), 90)
+    # mdiff.turn_to_angle(SpeedRPM(5), 0)
 
     # Now go back to where we started and rotate in place to 90 degrees
     # mdiff.on_to_coordinates(SpeedRPM(25), 0, 0)
