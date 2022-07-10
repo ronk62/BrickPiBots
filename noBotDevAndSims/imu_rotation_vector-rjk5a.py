@@ -158,7 +158,8 @@ with dai.Device(pipeline) as device:
 
             # conv to uler_from_quaternion using function
             # 7/4/2022 note: pitch and roll seem to be transposed; further testing needed
-            pitch_y, yaw_z, roll_x = euler_from_quaternion(cw, cx, cy, cz)
+            # pitch_y, yaw_z, roll_x = euler_from_quaternion(cw, cx, cy, cz)  # orig order, seems wrong
+            roll_x, yaw_z, pitch_y = euler_from_quaternion(cw, cx, cy, cz)  # swapped pitch and roll
 
             print("RPY [deg]: roll_x: {0:.7f}, pitch_y: {1:.7f}, yaw_z: {2:.7f}".format(roll_x, pitch_y, yaw_z))
 
