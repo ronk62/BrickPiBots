@@ -1,1 +1,0 @@
-./luxonis/depthai-python/examples/SpatialDetection/spatial_mobilenet-IMU-20220724.py
