@@ -79,6 +79,9 @@ Adapted from Spatial detection network demo.
 # flag to enable/disable show images
 showImages = False
 
+# set global vars
+global roll_x, pitch_y, yaw_z
+
 np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
 # ## setup for live graphing
@@ -255,7 +258,12 @@ def quat_multiply(q1, q2):
 def timeDeltaToMilliS(delta) -> float:
     return delta.total_seconds()*1000
 
+
 def devicePipeline(name):
+
+    # set to True for debug printing
+    debugPrint = False
+
     # Connect to device and start pipeline
     with dai.Device(pipeline) as device:
         # Output queues will be used to get the rgb frames and nn data from the outputs defined above
@@ -273,6 +281,10 @@ def devicePipeline(name):
         baseTs = None
 
         while True:
+
+            # set global vars
+            global roll_x, pitch_y, yaw_z
+
             ## Cam main section
             inPreview = previewQueue.get()
             inDet = detectionNNQueue.get()
@@ -314,9 +326,11 @@ def devicePipeline(name):
                 #print("detections data...  ", detections)
                 for detection in detections:
                     label = labelMap[detection.label]
-                    print("detection label, labelnum, x, y, z, confidence ...  ", label, detection.label, (int(detection.spatialCoordinates.x)), (int(detection.spatialCoordinates.y)), (int(detection.spatialCoordinates.z)), detection.confidence * 100)
+                    if debugPrint:
+                        print("detection label, labelnum, x, y, z, confidence ...  ", label, detection.label, (int(detection.spatialCoordinates.x)), (int(detection.spatialCoordinates.y)), (int(detection.spatialCoordinates.z)), detection.confidence * 100)
             temperature = device.getChipTemperature().average
-            print("avg temp:  ", temperature)
+            if debugPrint:
+                print("avg temp:  ", temperature)
 
 
             ## IMU section
@@ -334,10 +348,11 @@ def devicePipeline(name):
                 imuF = "{:.06f}"
                 tsF  = "{:.03f}"
 
-                print(f"Rotation vector timestamp: {tsF.format(timeDeltaToMilliS(rvTs))} ms")
-                print(f"Quaternion: i: {imuF.format(rVvalues.i)} j: {imuF.format(rVvalues.j)} "
-                    f"k: {imuF.format(rVvalues.k)} real: {imuF.format(rVvalues.real)}")
-                print(f"Accuracy (rad): {imuF.format(rVvalues.rotationVectorAccuracy)}")
+                if debugPrint:
+                    print(f"Rotation vector timestamp: {tsF.format(timeDeltaToMilliS(rvTs))} ms")
+                    print(f"Quaternion: i: {imuF.format(rVvalues.i)} j: {imuF.format(rVvalues.j)} "
+                        f"k: {imuF.format(rVvalues.k)} real: {imuF.format(rVvalues.real)}")
+                    print(f"Accuracy (rad): {imuF.format(rVvalues.rotationVectorAccuracy)}")
 
 
                 ### Quaternions to Euler
@@ -362,8 +377,9 @@ def devicePipeline(name):
                 # extract w, z, y, z as converted (cw, cx, cy, cz)
                 cw, cx, cy, cz = qV2
                 # testing
-                print("cw, cx, cy, cz = ", cw, cx, cy, cz)
-                print("")
+                if debugPrint:
+                    print("cw, cx, cy, cz = ", cw, cx, cy, cz)
+                    print("")
                 
                 # # conv to uler_from_quaternion using function
                 # pitch_y, yaw_z, roll_x = euler_from_quaternion(w, x, y, z)
@@ -373,7 +389,8 @@ def devicePipeline(name):
                 # pitch_y, yaw_z, roll_x = euler_from_quaternion(cw, cx, cy, cz)  # orig order, seems wrong
                 roll_x, yaw_z, pitch_y = euler_from_quaternion(cw, cx, cy, cz)  # swapped pitch and roll
 
-                print("RPY [deg]: roll_x: {0:.7f}, pitch_y: {1:.7f}, yaw_z: {2:.7f}".format(roll_x, pitch_y, yaw_z))
+                if debugPrint:
+                    print("RPY [deg]: roll_x: {0:.7f}, pitch_y: {1:.7f}, yaw_z: {2:.7f}".format(roll_x, pitch_y, yaw_z))
 
                 ### conv to matrix form and 
                 # remove negative (0 +/- 180) angles
@@ -415,17 +432,18 @@ def devicePipeline(name):
                 theta1Rad=math.radians(yaw_z)
                 Rq_05 = Rz(theta1Rad)
                 Rq_06 = np.dot(Rq_04, Rq_05)
-                print()
-                print("Rq_06 is  ")
-                print(np.matrix(Rq_06))
-                print()
+                if debugPrint:
+                    print()
+                    print("Rq_06 is  ")
+                    print(np.matrix(Rq_06))
+                    print()
 
                 #time.sleep(0.5)
 
             # ax1.clear()
             # ax1.plot(1, 2, label='fake-o-matic')
 
-            time.sleep(0.001)
+            time.sleep(0.05)
 
 
             ## Cam optional section
@@ -491,6 +509,7 @@ if __name__ == "__main__":
 
 while True:
     print("main loop running")
+    print("RPY [deg]: roll_x: {0:.7f}, pitch_y: {1:.7f}, yaw_z: {2:.7f}".format(roll_x, pitch_y, yaw_z))
     time.sleep(1)
     # try:
     #     ani = animation.FuncAnimation(fig, animate, interval=100)
