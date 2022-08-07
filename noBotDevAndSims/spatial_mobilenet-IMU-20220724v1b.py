@@ -79,8 +79,10 @@ Adapted from Spatial detection network demo.
 # flag to enable/disable show images
 showImages = False
 
-# set global vars
-global roll_x, pitch_y, yaw_z
+# set global vars and initialize to 0
+roll_xG = 0
+pitch_yG = 0
+yaw_zG = 0
 
 np.set_printoptions(formatter={'float': lambda x: "{0:0.3f}".format(x)})
 
@@ -261,6 +263,9 @@ def timeDeltaToMilliS(delta) -> float:
 
 def devicePipeline(name):
 
+    # set global vars
+    global roll_xG, pitch_yG, yaw_zG
+    
     # set to True for debug printing
     debugPrint = False
 
@@ -283,7 +288,7 @@ def devicePipeline(name):
         while True:
 
             # set global vars
-            global roll_x, pitch_y, yaw_z
+            global roll_xG, pitch_yG, yaw_zG
 
             ## Cam main section
             inPreview = previewQueue.get()
@@ -382,34 +387,34 @@ def devicePipeline(name):
                     print("")
                 
                 # # conv to uler_from_quaternion using function
-                # pitch_y, yaw_z, roll_x = euler_from_quaternion(w, x, y, z)
+                # pitch_yG, yaw_zG, roll_xG = euler_from_quaternion(w, x, y, z)
 
                 # conv to uler_from_quaternion using function
                 # 7/4/2022 note: pitch and roll seem to be transposed; further testing needed
-                # pitch_y, yaw_z, roll_x = euler_from_quaternion(cw, cx, cy, cz)  # orig order, seems wrong
-                roll_x, yaw_z, pitch_y = euler_from_quaternion(cw, cx, cy, cz)  # swapped pitch and roll
+                # pitch_yG, yaw_zG, roll_xG = euler_from_quaternion(cw, cx, cy, cz)  # orig order, seems wrong
+                roll_xG, yaw_zG, pitch_yG = euler_from_quaternion(cw, cx, cy, cz)  # swapped pitch and roll
 
                 if debugPrint:
-                    print("RPY [deg]: roll_x: {0:.7f}, pitch_y: {1:.7f}, yaw_z: {2:.7f}".format(roll_x, pitch_y, yaw_z))
+                    print("RPY [deg]: roll_xG: {0:.7f}, pitch_yG: {1:.7f}, yaw_zG: {2:.7f}".format(roll_xG, pitch_yG, yaw_zG))
 
                 ### conv to matrix form and 
                 # remove negative (0 +/- 180) angles
-                if roll_x < 0:
-                    roll_x = 360 + roll_x
-                if pitch_y < 0:
-                    pitch_y = 360 + pitch_y
-                if yaw_z < 0:
-                    yaw_z = 360 + yaw_z
+                if roll_xG < 0:
+                    roll_xG = 360 + roll_xG
+                if pitch_yG < 0:
+                    pitch_yG = 360 + pitch_yG
+                if yaw_zG < 0:
+                    yaw_zG = 360 + yaw_zG
                 
                 # create idetntity matrix
                 R_I = np.eye(3)
                 
-                ## rotate around x by (minus) -roll_x # suspected problems negated roll_x
+                ## rotate around x by (minus) -roll_xG # suspected problems negated roll_xG
                 # convert to radians
-                theta1Rad=math.radians(-roll_x)
-                # ## rotate around x by roll_x # removed negation
+                theta1Rad=math.radians(-roll_xG)
+                # ## rotate around x by roll_xG # removed negation
                 # # convert to radians
-                # theta1Rad=math.radians(roll_x)
+                # theta1Rad=math.radians(roll_xG)
                 Rq_01 = Rx(theta1Rad)
                 Rq_02 = np.dot(R_I, Rq_01)
                 # print()
@@ -417,9 +422,9 @@ def devicePipeline(name):
                 # print(np.matrix(Rq_02))
                 # print()
                 
-                ## rotate around y by pitch_y
+                ## rotate around y by pitch_yG
                 # convert to radians
-                theta1Rad=math.radians(pitch_y)
+                theta1Rad=math.radians(pitch_yG)
                 Rq_03 = Ry(theta1Rad)
                 Rq_04 = np.dot(Rq_02, Rq_03)
                 # print()
@@ -427,9 +432,9 @@ def devicePipeline(name):
                 # print(np.matrix(Rq_04))
                 # print()
                 
-                ## rotate around z by yaw_z
+                ## rotate around z by yaw_zG
                 # convert to radians
-                theta1Rad=math.radians(yaw_z)
+                theta1Rad=math.radians(yaw_zG)
                 Rq_05 = Rz(theta1Rad)
                 Rq_06 = np.dot(Rq_04, Rq_05)
                 if debugPrint:
@@ -488,29 +493,30 @@ if __name__ == "__main__":
 
 # def animate(i):
 #     # init some vars
-#     roll_xMean = 0
-#     yaw_zMean = 0
-#     pitch_yMean = 0
-#     roll_xStdev = 0
-#     yaw_zStdev = 0
-#     pitch_yStdev = 0
+#     roll_xGMean = 0
+#     yaw_zGMean = 0
+#     pitch_yGMean = 0
+#     roll_xGStdev = 0
+#     yaw_zGStdev = 0
+#     pitch_yGStdev = 0
 
 #     # Declare vars as global to force use of global in this function
 #     global ODt
-#     global roll_x, yaw_z, pitch_y
-#     # global roll_xMean, yaw_zMean, pitch_yMean
-#     # global roll_xStdev, yaw_zStdev, pitch_yStdev
+#     global roll_xG, yaw_zG, pitch_yG
+#     # global roll_xGMean, yaw_zGMean, pitch_yGMean
+#     # global roll_xGStdev, yaw_zGStdev, pitch_yGStdev
 
 #     # # init the data collection arrays for each collection series
-#     # roll_xArr = np.array([], dtype=np.int32)
-#     # yaw_zArr = np.array([], dtype=np.int32)
-#     # pitch_yArr = np.array([], dtype=np.int32)
+#     # roll_xGArr = np.array([], dtype=np.int32)
+#     # yaw_zGArr = np.array([], dtype=np.int32)
+#     # pitch_yGArr = np.array([], dtype=np.int32)
 
 
 while True:
     print("main loop running")
-    print("RPY [deg]: roll_x: {0:.7f}, pitch_y: {1:.7f}, yaw_z: {2:.7f}".format(roll_x, pitch_y, yaw_z))
-    time.sleep(1)
+    
+    print("RPY [deg]: roll_xG: {0:.7f}, pitch_yG: {1:.7f}, yaw_zG: {2:.7f}".format(roll_xG, pitch_yG, yaw_zG))
+    time.sleep(0.05)
     # try:
     #     ani = animation.FuncAnimation(fig, animate, interval=100)
     #     plt.show()        
