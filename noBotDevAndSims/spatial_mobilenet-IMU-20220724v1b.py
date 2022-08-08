@@ -23,15 +23,15 @@ print("importing matplotlib.pyplot as plt - waiting 1 secs")
 import matplotlib.pyplot as plt
 time.sleep(1)
 
-# debug
-print("importing matplotlib.animation as animation - waiting 1 secs")
-import matplotlib.animation as animation
-time.sleep(1)
+# # debug
+# print("importing matplotlib.animation as animation - waiting 1 secs")
+# import matplotlib.animation as animation
+# time.sleep(1)
 
-# debug
-print("importing from matplotlib import style - waiting 1 secs")
-from matplotlib import style
-time.sleep(1)
+# # debug
+# print("importing from matplotlib import style - waiting 1 secs")
+# from matplotlib import style
+# time.sleep(1)
 
 # debug
 print("importing from pathlib import Path - waiting 1 secs")
@@ -445,10 +445,8 @@ def devicePipeline(name):
 
                 #time.sleep(0.5)
 
-            # ax1.clear()
-            # ax1.plot(1, 2, label='fake-o-matic')
 
-            time.sleep(0.05)
+            time.sleep(5)
 
 
             ## Cam optional section
@@ -516,7 +514,43 @@ while True:
     print("main loop running")
     
     print("RPY [deg]: roll_xG: {0:.7f}, pitch_yG: {1:.7f}, yaw_zG: {2:.7f}".format(roll_xG, pitch_yG, yaw_zG))
-    time.sleep(0.05)
+
+    yaw_zG2 = yaw_zG
+
+    # calculate 3d compass "needle" endpoints
+    headingX0 = 1
+    headingY0 = 1
+    headingX1 = math.cos(math.radians(yaw_zG2))
+    headingY1 = math.sin(math.radians(yaw_zG2))
+
+    # ## graph the unit vectors
+    # fig, ax = plt.subplots()
+
+    # plt.scatter(headingX0,headingY0, label='heading origin', color='r', s=25, marker="o")
+    # line1, = ax.plot(headingX1,headingY1, label='heading (yaw)', lw=0.4, color='r', marker="None")
+
+    # # plt.scatter(x1,y1, label='apriltag (v1) origin', color='y', s=25, marker="o")
+    # # line2, = ax.plot(vxx1,vxy1, label='v1 x', lw=0.4, color='y', marker="None")
+
+    # # plt.scatter(x2,y2, label='cam/bot (v2) origin', color='m', s=25, marker="o")
+    # # line3, = ax.plot(vxx2,vxy2, label='v2 x', lw=0.4, color='m', marker="None")
+
+    # plt.axis('equal')
+    # plt.xlabel('3d compass x-position')
+    # plt.ylabel('3d compass Z-position')
+    # plt.title('unit vectors')
+    # plt.legend()
+    # plt.show()
+
+
+    #Plotting to our canvas
+    plt.plot(headingX0,headingY0)
+
+    #Showing what we plotted
+    plt.show()
+
+    time.sleep(0.1)
+
     # try:
     #     ani = animation.FuncAnimation(fig, animate, interval=100)
     #     plt.show()        
