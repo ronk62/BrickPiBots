@@ -146,7 +146,7 @@ prev_irProxVal = 0
 p4 = LegoPort(INPUT_4)
 
 # https://docs.ev3dev.org/projects/lego-linux-drivers/en/ev3dev-buster/brickpi3.html#input-ports
-p1.mode = 'nxt-i2c'
+p4.mode = 'nxt-i2c'
 
 # allow for some time for mode to setup
 time.sleep(0.5)
@@ -170,7 +170,7 @@ p4.set_device = 'ms-tof 0x01'
 # allow for some time for setup
 time.sleep(0.5)
 
-# Connect sensor to sensor port 1
+# Connect sensor to sensor port 4
 ToF = Sensor(INPUT_4)
 
 # allow for some time to load the new drivers
@@ -427,6 +427,8 @@ while (True):
     # a 10 deg robot pivot turn = 45 motor ticks
 
     if sample_mode > 0:
+        #### commenting Apriltag sample section for now - 11/12/2022
+        '''
         # initialize PiCam, vars, arrays for image capture
         tagInCamFrame = np.array([[],[],[],[]], dtype=np.int32)
         camInTagFrame = np.array([[],[],[],[]], dtype=np.int32)
@@ -585,6 +587,11 @@ while (True):
 
         cap.release()
         cv2.destroyAllWindows()
+        '''
+
+        #### hard-coding BOT world-frame, in place of Apriltag ref - 11/12/2022
+        wBOTx1 = 114
+        wBOTy1 = 40
 
 
         ######################
@@ -608,9 +615,13 @@ while (True):
 
         print("rotate to angle i; stop and take US data samples")
         print("")
+        
         # rotate to angle i; stop and take US data samples
         #for i in range(compassVal - 1,compassVal + 1,1):  ### use for quick IR testing
-        for i in range(6,360,6):  ### use for normal operation
+        #for i in range(6,360,60):  ### use for quick, low-res testing
+        #for i in range(6,360,6):  ### use for normal operation
+        #for i in range(6,360,1):  ### use for slower, high-res testing
+        for i in range(3,360,1):  ### active config
             ## move motor to new cmps angle
             while compassVal < i - 1 or compassVal > i + 1:
                 compassVal = cmp.value(0)
@@ -642,6 +653,8 @@ while (True):
                     irProxVal = prev_irProxVal
 
                 distmm = ToF.value(0)
+                if distmm > 3000:
+                    distmm = 0
                 distcm = distmm / 10
                 
                 compassVal = cmp.value(0)
@@ -701,6 +714,8 @@ while (True):
         ##################################################
 
 
+        #### commenting Apriltag sample section for now - 11/12/2022
+        '''
         ## graph the relative position data
         plt.figure(1)
 
@@ -719,6 +734,8 @@ while (True):
         print("wBOTx1, wBOTy1 (robot world frame location, AprTag1 ref) = ", wBOTx1, wBOTy1)
         print("")
         print("")
+
+        '''
 
 
         ## world frame "room" configuration space (simple rectangle)
@@ -808,7 +825,7 @@ while (True):
 
         plt.scatter(USx1,USy1, label='US point cloud', color='g', s=25, marker="o")
         plt.scatter(IRx1,IRy1, label='IR point cloud', color='r', s=25, marker="o")
-        plt.scatter(ToFx1,ToFy1, label='US point cloud', color='b', s=25, marker="o")
+        plt.scatter(ToFx1,ToFy1, label='ToF point cloud', color='b', s=25, marker="o")
         plt.axis('equal')
         plt.xlabel('x-position')
         plt.ylabel('y-position')
@@ -829,11 +846,12 @@ while (True):
         # plt.scatter(USx2, USy2, label='US point cloud', color='g', s=25, marker="o")
 
         plt.scatter(wBOTx1, wBOTy1, label='robot location AprTag1 ref', color='b', s=25, marker="o")
-        plt.scatter(wAprTag1x,wAprTag1y, label='AprTag1 location', color='k', s=25, marker="o")
+        # commented Apriltag line below - 11/12/2022
+        #plt.scatter(wAprTag1x,wAprTag1y, label='AprTag1 location', color='k', s=25, marker="o")
         plt.axis('equal')
         plt.xlabel('x-position')
         plt.ylabel('y-position')
-        plt.title('AprTag1 - world frame position data V20210131')
+        plt.title('AprTag1 - world frame position data V20221112')
         plt.legend()
         plt.show()
 
