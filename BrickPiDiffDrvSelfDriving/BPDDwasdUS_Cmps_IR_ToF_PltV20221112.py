@@ -653,7 +653,7 @@ while (True):
                     irProxVal = prev_irProxVal
 
                 distmm = ToF.value(0)
-                if distmm > 3000:
+                if distmm > 1300:   # discount values outside current sensor range
                     distmm = 0
                 distcm = distmm / 10
                 
@@ -861,7 +861,12 @@ while (True):
         print("Sampling complete. Returning to keyboard cmd mode.")
         # cleanup arrays and vars
         USmean = np.array([], dtype=np.int32)
+        IRmean = np.array([], dtype=np.int32)
+        ToFmean = np.array([], dtype=np.int32)
         cmpMean = np.array([], dtype=np.int32)
+        USstd = np.array([], dtype=np.int32)
+        IRstd = np.array([], dtype=np.int32)
+        ToFstd = np.array([], dtype=np.int32)
 
 
         ######################
