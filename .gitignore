@@ -3,3 +3,7 @@
 ELPCam/*
 noBotDevAndSims/luxonis/*
 noBotDevAndSims/sentdex/ORB_BFMatcher/ELPORB_BFMatcher-Locator-vid-score-myPix-4.py
+noBotDevAndSims/sentdex/ORB_BFMatcher/refData/LHframe8.jpg-badNoKPs
+noBotDevAndSims/sentdex/ORB_BFMatcher/refData/RHframe8.jpg-badNoKPs
+noBotDevAndSims/sentdex/ORB_BFMatcher/tmp-test.py
+noBotDevAndSims/sentdex/ORB_BFMatcher/DellLaptopVersion/tmp-ORB_BFMatcher-Locator-myPix-3Dell.py
