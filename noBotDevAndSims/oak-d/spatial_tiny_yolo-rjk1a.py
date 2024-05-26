@@ -15,6 +15,7 @@ Spatial Tiny-yolo example
 
 # flag to enable/disable show images
 showImages = False
+# showImages = True
 
 
 # Get argument first
