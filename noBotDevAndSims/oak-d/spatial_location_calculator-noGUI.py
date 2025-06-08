@@ -86,7 +86,7 @@ with dai.Device(pipeline) as device:
 
     color = (255, 255, 255)
 
-    print("Use WASD keys to move ROI!")
+    print("Use Arrow keys to move ROI!")
 
     while True:
         inDepth = depthQueue.get() # Blocking call, will wait until a new data has arrived
