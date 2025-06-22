@@ -14,6 +14,7 @@ Spatial detection network demo.
 
 # flag to enable/disable show images
 showImages = False
+# showImages = True       ### FAIL...overloads the raspi 3b+ when using xming
 
 # Get argument first
 nnBlobPath = str((Path(__file__).parent / Path('../models/mobilenet-ssd_openvino_2021.4_6shave.blob')).resolve().absolute())
