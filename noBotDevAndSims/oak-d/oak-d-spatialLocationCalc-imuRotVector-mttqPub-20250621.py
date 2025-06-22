@@ -10,6 +10,8 @@
 #                           - also, I did not complete the 'publish spatialLocationCalcData data over mttq' section; the
 #                             data needs to be assigned to variables (prior to the print statements) and the function call
 #                             needs those variables substituted for the hard-coded dummy values I placed there temporarily
+# 6/22/2025                 - fixed the keyboard control entry bug; this was caused by a redundant use of var name 'x'
+#                           - also renamed var, 'yawCCWincr' to 'yawCWincr' (the intent was to indicate clockwise, not counterCW)
 
 
 import cv2
@@ -27,7 +29,7 @@ kbx = 0   # set here to make global
 def keyboardInput(name):
     while (True):
         global kbx  # Declare kbx as global to force use of global 'kbx' in this function/thread
-        x = ord(sys.stdin.read(1))
+        kbx = ord(sys.stdin.read(1))
         time.sleep(0.05)
 
 
@@ -123,8 +125,7 @@ with dai.Device(pipeline) as device:
     color = (255, 255, 255)
 
     print("Use Arrow keys to move ROI!")
-    kbx = 65 # testing, comment or delete later!
-
+    
     # Output queue for imu bulk packets
     imuQueue = device.getOutputQueue(name="imu", maxSize=50, blocking=False)
     baseTs = None
@@ -204,6 +205,8 @@ with dai.Device(pipeline) as device:
 
     while True:
         
+        #kbx = 65 # testing, comment or delete later!
+
         # Get Spatial Results
         inDepth = depthQueue.get() # Blocking call, will wait until a new data has arrived
 
@@ -350,8 +353,8 @@ with dai.Device(pipeline) as device:
                 print("RPY [0-359 deg]: roll_x: {0:.7f}, pitch_y: {1:.7f}, yaw_z: {2:.7f}".format(roll_x, pitch_y, yaw_z))
 
                 # show yaw(z) in std compass CW increasing form
-                yawCCWincr = 360 - yaw_z
-                print("RPY [yawCWincr deg]: roll_x: {0:.7f}, pitch_y: {1:.7f}, yawCCWincr: {2:.7f}".format(roll_x, pitch_y, yawCCWincr))
+                yawCWincr = 360 - yaw_z
+                print("RPY [yawCWincr deg]: roll_x: {0:.7f}, pitch_y: {1:.7f}, yawCWincr: {2:.7f}".format(roll_x, pitch_y, yawCWincr))
 
                 # publish imuData over mttq
                 mttqPub.publish_imuRotVector_data(roll_x, pitch_y, yaw_z)
