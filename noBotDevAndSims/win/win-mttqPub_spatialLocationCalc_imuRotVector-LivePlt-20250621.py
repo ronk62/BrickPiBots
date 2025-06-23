@@ -12,7 +12,10 @@ imuData = [0,0,0]
 spatialLocationData = [0,0,0]
 
 # setup for graphing the IMU/CAM data unit vectors
-fig, ax = plt.subplots()
+fig1, ax1 = plt.subplots()
+
+# setup for graphing the spacialCalcROIxyz data
+fig2, ax2 = plt.subplots()
 
 # This is the Subscriber
 
@@ -47,15 +50,9 @@ def on_message(client, userdata, msg):
         time.sleep(0.2)
 
 
-def animate(i):
-    global spatialLocationData
+def animate1(i):
     global imuData
-    print("spatialLocationData = ", spatialLocationData)
     print("imuData = ", imuData)
-    
-    # extract ROIx, ROIy, ROIz (3D depth 'z' data at x,y coords)
-    ROIx, ROIy, ROIz = spatialLocationData
-
 
     # extract roll, pitch, yaw
     imuRoll, imuPitch, imuYaw = imuData
@@ -89,27 +86,52 @@ def animate(i):
     headingY1 = headingY0 + math.sin(math.radians(imuYaw))
     print("headingY1 = ", headingY1)
 
-    ax.clear()
 
-    # graph the IMU 3d compass data
+    # graph the IMU 3d compass/gyro data
+
+    ax1.clear()
+    
+    ax1.scatter(rollX0,rollY0, label='roll origin', color='b', s=25, marker="o")
+    line2, = ax1.plot([rollX0,rollX1], [rollY0,rollY1], label='roll', lw=0.4, color='b', marker="None")
+
+    ax1.scatter(pitchX0,pitchY0, label='pitch origin', color='r', s=25, marker="o")
+    line1, = ax1.plot([pitchX0,pitchX1], [pitchY0,pitchY1], label='pitch', lw=0.4, color='r', marker="None")
+
+    ax1.scatter(headingX0,headingY0, label='heading origin', color='g', s=25, marker="o")
+    line3, = ax1.plot([headingX0,headingX1], [headingY0,headingY1], label='heading (yaw)', lw=0.4, color='g', marker="None")
 
 
-    plt.scatter(rollX0,rollY0, label='roll origin', color='b', s=25, marker="o")
-    line2, = ax.plot([rollX0,rollX1], [rollY0,rollY1], label='roll', lw=0.4, color='b', marker="None")
+    ax1.set_aspect('equal')
+    ax1.set_xlabel('3d compass x-position')
+    ax1.set_ylabel('3d compass Z-position')
+    ax1.set_title('unit vectors')
+    #ax1.legend(loc='upper right')
+    # fix from chatgpt below to remove obstructing legend covering parts of the plot
+    ax1.legend(loc='upper center', bbox_to_anchor=(0.5, -0.4), ncol=3)
 
-    plt.scatter(pitchX0,pitchY0, label='pitch origin', color='r', s=25, marker="o")
-    line1, = ax.plot([pitchX0,pitchX1], [pitchY0,pitchY1], label='pitch', lw=0.4, color='r', marker="None")
 
-    plt.scatter(headingX0,headingY0, label='heading origin', color='g', s=25, marker="o")
-    line3, = ax.plot([headingX0,headingX1], [headingY0,headingY1], label='heading (yaw)', lw=0.4, color='g', marker="None")
+def animate2(i):
+    global spatialLocationData
+    print("spatialLocationData = ", spatialLocationData)
+    
+    # extract ROIx, ROIy, ROIz (3D depth 'z' data at x,y coords)
+    ROIx, ROIy, ROIz = spatialLocationData
 
+    # graph the spacialLocationCalc data
+        
+    ax2.clear()  # needed due to animation
 
-    plt.axis('equal')
-    plt.xlabel('3d compass x-position')
-    plt.ylabel('3d compass Z-position')
-    plt.title('unit vectors')
-    plt.legend()
+    ax2.scatter(ROIz,ROIy, label='ROI z(distance)/y(height) location', color='b', s=25, marker="o")
+
+    #ax2.set_aspect('equal')
+    ax2.set_xlabel('ROIz')
+    ax2.set_ylabel('ROIy')
+    ax2.set_title('spatialLocationData')
+    ax2.legend(loc='upper right')
+    #ax2.legend(loc='upper center', bbox_to_anchor=(0.5, -0.4), ncol=3)
+
     time.sleep(0.5)
+    
 
 
 client = mqtt.Client()
@@ -126,7 +148,8 @@ client.loop_start()
 
 # plot the mqtt msg data (currently shared as globals)
 try:
-    ani = animation.FuncAnimation(fig, animate, interval=100, repeat=False)
+    ani1 = animation.FuncAnimation(fig1, animate1, interval=100, repeat=False)
+    ani2 = animation.FuncAnimation(fig2, animate2, interval=100, repeat=False)
     plt.show()
     
 except KeyboardInterrupt: # except the program gets interrupted by Ctrl+C on the keyboard.
