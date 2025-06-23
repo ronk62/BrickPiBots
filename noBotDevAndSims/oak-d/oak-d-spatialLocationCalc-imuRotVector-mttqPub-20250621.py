@@ -232,15 +232,18 @@ with dai.Device(pipeline) as device:
             cv2.rectangle(depthFrameColor, (xmin, ymin), (xmax, ymax), color, cv2.FONT_HERSHEY_SCRIPT_SIMPLEX)
             cv2.putText(depthFrameColor, f"X: {int(depthData.spatialCoordinates.x)} mm", (xmin + 10, ymin + 20), fontType, 0.5, 255)
             print("spatialLocationCalc X: ", int(depthData.spatialCoordinates.x), "mm")
+            spatialLocationCalcX = int(depthData.spatialCoordinates.x)
             cv2.putText(depthFrameColor, f"Y: {int(depthData.spatialCoordinates.y)} mm", (xmin + 10, ymin + 35), fontType, 0.5, 255)
             print("spatialLocationCalc Y: ", int(depthData.spatialCoordinates.y), "mm")
+            spatialLocationCalcY = int(depthData.spatialCoordinates.y)
             cv2.putText(depthFrameColor, f"Z: {int(depthData.spatialCoordinates.z)} mm", (xmin + 10, ymin + 50), fontType, 0.5, 255)
             print("spatialLocationCalc Z: ", int(depthData.spatialCoordinates.z), "mm")
+            spatialLocationCalcZ = int(depthData.spatialCoordinates.z)
             print()
             print()
 
         # publish spatialLocationCalcData data over mttq
-        mttqPub.publish_spatialLocationCalc_data(100, 200, 300)
+        mttqPub.publish_spatialLocationCalc_data(spatialLocationCalcX, spatialLocationCalcY, spatialLocationCalcZ)
 
         # Show the frame
         #cv2.imshow("depth", depthFrameColor)
